@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "smart-npcs-poc"
+version = "0.1.0"
+description = ""
+authors = ["LaBrens <maxbreney@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+langchain = "^0.3.4"
+ipykernel = "^6.29.5"
+langchain-community = "^0.3.3"
+uvicorn = "^0.32.0"
+fastapi = "^0.115.3"
+transformers = "^4.46.0"
+torch = "^2.5.0"
+huggingface-hub = "^0.26.1"
+qdrant-client = "^1.12.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
