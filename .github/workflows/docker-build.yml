@@ -1,0 +1,51 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - brechi/develop  # Trigger the workflow on push to the specified branch
+
+  pull_request:
+    branches:
+      - brechi/develop  # Trigger the workflow on pull requests targeting the develop branch
+    
+  # Optionally, you can enable manual trigger
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      # Checkout the repository code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/arm64
+          
+      # Build the Docker image
+      - name: Build Docker image
+        run: |
+          IMAGE_NAME=ghcr.io/${{ github.repository }}  # Get the repository name
+          IMAGE_NAME_LOWER=$(echo "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')  # Convert to lowercase
+          docker build --platform linux/arm64 -t "${IMAGE_NAME_LOWER}/smart-npc-poc:latest" .
+
+      # Log in to GitHub Container Registry
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Push the Docker image to GitHub Container Registry
+      - name: Push Docker image
+        run: |
+          IMAGE_NAME=ghcr.io/${{ github.repository }}  # Get the repository name
+          IMAGE_NAME_LOWER=$(echo "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')  # Convert to lowercase
+          docker push "${IMAGE_NAME_LOWER}/smart-npc-poc:latest"
