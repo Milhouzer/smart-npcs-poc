@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Milhouzer.CameraSystem
 {
@@ -44,7 +46,7 @@ namespace Milhouzer.CameraSystem
         Coroutine zoomRoutine;
         
         Transform _lastTarget;
-        
+
         public float Priority { 
             get { return cam.depth; }
             set { cam.depth = value; }
@@ -132,6 +134,12 @@ namespace Milhouzer.CameraSystem
             currentZoomLevel = value;
             currentObjectOffset = trackedObjectOffset * currentZoomLevel;
             zoomRoutine = null;
+        }
+
+        internal Ray ScreenToPointRay()
+        {
+            Vector3 mousePosition = UnityEngine.Input.mousePosition;
+            return cam.ScreenPointToRay(mousePosition);
         }
     }
 }

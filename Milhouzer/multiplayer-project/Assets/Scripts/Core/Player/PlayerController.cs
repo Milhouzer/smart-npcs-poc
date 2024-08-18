@@ -151,7 +151,27 @@ namespace Milhouzer
         void Update() {
             timer.Update(Time.deltaTime);
             if(UnityEngine.Input.GetKeyDown(KeyCode.Q)) {
-                transform.position += transform.forward * 20f;
+                // transform.position += transform.forward * 20f;
+            }
+
+            if (UnityEngine.Input.GetMouseButtonDown(0)) // 0 is the left mouse button
+            {
+                HandleClick();
+            }
+        }
+
+        private void HandleClick()
+        {
+            Ray ray = cameraController.ScreenToPointRay();
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit))
+            {
+                ISelectable selectable = hit.collider.GetComponent<ISelectable>();
+                if (selectable != null)
+                {
+                    GameManager.Instance.SelectServerRpc(hit.transform.gameObject, NetworkManager.Singleton.LocalClientId);
+                }
             }
         }
 

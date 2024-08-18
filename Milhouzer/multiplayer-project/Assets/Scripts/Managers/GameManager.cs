@@ -7,13 +7,12 @@ using Milhouzer.Utils;
 using Unity.Netcode;
 using UnityEngine;
 
-public class GameManager : NetworkBehaviour
+public class GameManager : NetworkedSingleton<GameManager>
 {
     [SerializeField] List<Color> playerColors;
 
     private NetworkList<PlayerData> networkPlayersData;
 
-    // Try to remove static to see how it behaves.
     public event Action<PlayerData> OnPlayerConnectedCallback;
     public event Action<PlayerData> OnPlayerDisconnectedCallback;
 
@@ -126,6 +125,10 @@ public class GameManager : NetworkBehaviour
     const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     const int length = 8;
 
+    /// <summary>
+    /// Random username generator
+    /// </summary>
+    /// <returns></returns>
     public static string GetUsername()
     {
         StringBuilder result = new StringBuilder(length);
@@ -138,6 +141,11 @@ public class GameManager : NetworkBehaviour
         return result.ToString();
     }
 
+    /// <summary>
+    /// Utility method to shuffle an array using Fisher-Yates algorithm
+    /// </summary>
+    /// <param name="list"></param>
+    /// <typeparam name="T"></typeparam>
     public static void Shuffle<T>(ref List<T> list)
     {
         System.Random rng = new System.Random();
@@ -150,5 +158,61 @@ public class GameManager : NetworkBehaviour
             list[k] = list[n];
             list[n] = value;
         }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void SelectServerRpc(NetworkObjectReference selectableRef, ulong requestingClientId)
+    {
+        Debug.Log($"{requestingClientId} tried to select {selectableRef.NetworkObjectId}");
+        if (selectableRef.TryGet(out NetworkObject selectableObject))
+        {
+            ISelectable selectable = selectableObject.GetComponent<ISelectable>();
+            if (selectable != null && !selectable.IsSelected())
+            {
+                selectable.Select(requestingClientId);
+                // NotifyClientsSelectionClientRpc(selectableRef, requestingClientId);
+            }else {
+                Debug.Log($"selectable {selectable} is selected: {selectable.IsSelected()}");
+            }
+        }else {
+            Debug.Log($"could not get NetworkObject out of {selectableRef.NetworkObjectId}");
+        }
+    }
+
+    // Client RPC to notify all clients of the selection
+    // [ClientRpc]
+    // private void NotifyClientsSelectionClientRpc(NetworkObjectReference selectableRef, ulong clientId)
+    // {
+    //     Debug.Log($"{clientId} selected {selectableRef}");
+    //     if (selectableRef.TryGet(out NetworkObject selectableObject))
+    //     {
+    //         ISelectable selectable = selectableObject.GetComponent<ISelectable>();
+    //         if (selectable != null)
+    //         {
+    //             selectable.Select(clientId);
+    //             if(clientId == NetworkManager.Singleton.LocalClientId) {
+    //                 Debug.Log("Selectable object has been selected by you.");
+    //             }else {
+    //                 Debug.Log($"Selectable object has been selected by {clientId}.");
+
+    //             }
+    //         }
+    //     }
+    // }
+
+    /// <summary>
+    /// Try get player data based on a given client Id.
+    /// </summary>
+    /// <param name="clientId"></param>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    public bool TryGetPlayerData(ulong clientId, out PlayerData data) {
+        foreach(PlayerData playerData in networkPlayersData) {
+            data = playerData;
+            return true;
+        }
+
+        data = default;
+        return false;
     }
 }
