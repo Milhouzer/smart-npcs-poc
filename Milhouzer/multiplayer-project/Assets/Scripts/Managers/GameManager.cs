@@ -1,14 +1,24 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Milhouzer.Utils;
 using Unity.Netcode;
 using UnityEngine;
+using Milhouzer.Input;
+using Milhouzer.BuildingSystem;
+using Milhouzer;
 
 public class GameManager : NetworkedSingleton<GameManager>
 {
+    [Header("Controller")]
+    [SerializeField]
+    InputReader input;
+    public InputReader Input => input;
+
+    [SerializeField]
+    BuildManagerSettings BuildManagerSettings;
+
     [SerializeField] List<Color> playerColors;
 
     private NetworkList<PlayerData> networkPlayersData;
@@ -16,6 +26,11 @@ public class GameManager : NetworkedSingleton<GameManager>
     public event Action<PlayerData> OnPlayerConnectedCallback;
     public event Action<PlayerData> OnPlayerDisconnectedCallback;
 
+    /// <summary>
+    /// Main camera component, different on each client.
+    /// </summary>
+    Camera playerCamera;
+    
     void Awake() {
         networkPlayersData = new NetworkList<PlayerData>(new List<PlayerData>(), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     }
@@ -23,23 +38,61 @@ public class GameManager : NetworkedSingleton<GameManager>
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        
+
         if(IsServer) 
-        {         
+        {
+            Debug.Log("[GameManager] Init as server");
             Shuffle<Color>(ref playerColors);   
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnectedCallback;
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnectCallback;
             networkPlayersData.OnListChanged += OnServerListChanged;
+            InitServerBuildManager(BuildManagerSettings);
         }
         else {
+            Debug.Log("[GameManager] Init as client");
             networkPlayersData.OnListChanged += OnClientListChanged;
+            PlayerController.OnPlayerCreatedCallback += OnPlayerCreatedCallback_Client;
             StartCoroutine(CheckPlayerData());
         }
     }
 
+    /// <summary>
+    /// Init server <see cref="BuildManager"/>, only the catalog is necessary for the server to instantiate objects.
+    /// </summary>
+    /// <param name="settings"></param>
+    void InitServerBuildManager(BuildManagerSettings settings) {
+        settings = Instantiate(settings);
+        BuildManager.Instance.Init(settings);
+    }
+
+    /// <summary>
+    /// Init client <see cref="BuildManager"/>, we pass the player camera and the input used to register callbacks to them
+    /// </summary>
+    /// <remarks>
+    /// Should input be registered in GameManager ?
+    /// </remarks>
+    /// <param name="settings"></param>
+    void InitClientBuildManager(BuildManagerSettings settings) {
+        settings = Instantiate(settings);
+        settings.Input = input;
+        settings.Camera = playerCamera;
+        BuildManager.Instance.Init(settings);
+    }
+
+    /// <summary>
+    /// Player connected callback, init <see cref="BuildManager"/> with data injection
+    /// </summary>
+    /// <param name="controller"></param>
+    private void OnPlayerCreatedCallback_Client(PlayerController controller)
+    {
+        Debug.Log($"[GameManager] player object created callback on server {controller.CamController.Camera}");
+        playerCamera = controller.CamController.Camera;
+        InitClientBuildManager(BuildManagerSettings);
+    }
+
     void OnServerListChanged(NetworkListEvent<PlayerData> changeEvent)
     {
-        Debug.Log($"[S] The list changed and now has {networkPlayersData.Count} elements:");
+        Debug.Log($"[GameManager_Server] The list changed and now has {networkPlayersData.Count} elements on server:");
         foreach(PlayerData data in networkPlayersData) {
             Debug.Log($"\r\n{data.Username}: {data.Color}");
         }
@@ -50,7 +103,7 @@ public class GameManager : NetworkedSingleton<GameManager>
     {
         if (NetworkManager.Singleton.LocalClientId == changeEvent.Value.Id) return;
 
-        Debug.Log($"[C] The list changed and now has {networkPlayersData.Count} elements {this.OwnerClientId}, {changeEvent.Value.Id}");
+        Debug.Log($"[GameManager_Client] The list changed and now has {networkPlayersData.Count} elements {this.OwnerClientId}, {changeEvent.Value.Id}");
         foreach(PlayerData data in networkPlayersData) {
             Debug.Log($"\r\n{data.Username}: {data.Color}");
         }
@@ -178,27 +231,6 @@ public class GameManager : NetworkedSingleton<GameManager>
             Debug.Log($"could not get NetworkObject out of {selectableRef.NetworkObjectId}");
         }
     }
-
-    // Client RPC to notify all clients of the selection
-    // [ClientRpc]
-    // private void NotifyClientsSelectionClientRpc(NetworkObjectReference selectableRef, ulong clientId)
-    // {
-    //     Debug.Log($"{clientId} selected {selectableRef}");
-    //     if (selectableRef.TryGet(out NetworkObject selectableObject))
-    //     {
-    //         ISelectable selectable = selectableObject.GetComponent<ISelectable>();
-    //         if (selectable != null)
-    //         {
-    //             selectable.Select(clientId);
-    //             if(clientId == NetworkManager.Singleton.LocalClientId) {
-    //                 Debug.Log("Selectable object has been selected by you.");
-    //             }else {
-    //                 Debug.Log($"Selectable object has been selected by {clientId}.");
-
-    //             }
-    //         }
-    //     }
-    // }
 
     /// <summary>
     /// Try get player data based on a given client Id.

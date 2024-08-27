@@ -35,6 +35,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""EnterBuildMode"",
+                    ""type"": ""Button"",
+                    ""id"": ""3761002b-740f-4597-a6c6-dbcb761abdf2"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -92,6 +101,125 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Move"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""393b1e9d-9131-4f09-b113-411d0f6d5941"",
+                    ""path"": ""<Keyboard>/b"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""EnterBuildMode"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
+        },
+        {
+            ""name"": ""Buider"",
+            ""id"": ""18aa8c0a-820c-4a9d-bef4-2dd5b1c29019"",
+            ""actions"": [
+                {
+                    ""name"": ""Build"",
+                    ""type"": ""Button"",
+                    ""id"": ""e98a2018-e299-424f-abdd-3b2ba7e0ed35"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Scale"",
+                    ""type"": ""Button"",
+                    ""id"": ""7fb9d672-4a1c-47b9-82f9-904f8c977c37"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Reset"",
+                    ""type"": ""Button"",
+                    ""id"": ""32faee2b-fb14-4b61-b697-ca0f441cde77"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Scroll"",
+                    ""type"": ""Button"",
+                    ""id"": ""2c5fd3e1-99d3-4f9f-8d11-8afb5712eb16"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ExitBuildMode"",
+                    ""type"": ""Button"",
+                    ""id"": ""f3e47b9a-6cf6-4e53-9bf1-89b32b5fa625"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""660e7903-3993-4fe6-9c2d-fa8095339acf"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": ""Press"",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Build"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d381b47f-1c7a-4b97-ad95-1fc153073ab8"",
+                    ""path"": """",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Scale"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c4b1ccb0-5171-482f-8b4e-76267972f7e6"",
+                    ""path"": """",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Reset"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""644395c8-da27-4072-b3ac-08a43190db88"",
+                    ""path"": """",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Scroll"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""a46d7310-8212-487f-b128-36ea25745f76"",
+                    ""path"": ""<Keyboard>/b"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ExitBuildMode"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -101,6 +229,14 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         // Player
         m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
         m_Player_Move = m_Player.FindAction("Move", throwIfNotFound: true);
+        m_Player_EnterBuildMode = m_Player.FindAction("EnterBuildMode", throwIfNotFound: true);
+        // Buider
+        m_Buider = asset.FindActionMap("Buider", throwIfNotFound: true);
+        m_Buider_Build = m_Buider.FindAction("Build", throwIfNotFound: true);
+        m_Buider_Scale = m_Buider.FindAction("Scale", throwIfNotFound: true);
+        m_Buider_Reset = m_Buider.FindAction("Reset", throwIfNotFound: true);
+        m_Buider_Scroll = m_Buider.FindAction("Scroll", throwIfNotFound: true);
+        m_Buider_ExitBuildMode = m_Buider.FindAction("ExitBuildMode", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -163,11 +299,13 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_Player;
     private List<IPlayerActions> m_PlayerActionsCallbackInterfaces = new List<IPlayerActions>();
     private readonly InputAction m_Player_Move;
+    private readonly InputAction m_Player_EnterBuildMode;
     public struct PlayerActions
     {
         private @PlayerInputActions m_Wrapper;
         public PlayerActions(@PlayerInputActions wrapper) { m_Wrapper = wrapper; }
         public InputAction @Move => m_Wrapper.m_Player_Move;
+        public InputAction @EnterBuildMode => m_Wrapper.m_Player_EnterBuildMode;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -180,6 +318,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Move.started += instance.OnMove;
             @Move.performed += instance.OnMove;
             @Move.canceled += instance.OnMove;
+            @EnterBuildMode.started += instance.OnEnterBuildMode;
+            @EnterBuildMode.performed += instance.OnEnterBuildMode;
+            @EnterBuildMode.canceled += instance.OnEnterBuildMode;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -187,6 +328,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Move.started -= instance.OnMove;
             @Move.performed -= instance.OnMove;
             @Move.canceled -= instance.OnMove;
+            @EnterBuildMode.started -= instance.OnEnterBuildMode;
+            @EnterBuildMode.performed -= instance.OnEnterBuildMode;
+            @EnterBuildMode.canceled -= instance.OnEnterBuildMode;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -204,8 +348,95 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         }
     }
     public PlayerActions @Player => new PlayerActions(this);
+
+    // Buider
+    private readonly InputActionMap m_Buider;
+    private List<IBuiderActions> m_BuiderActionsCallbackInterfaces = new List<IBuiderActions>();
+    private readonly InputAction m_Buider_Build;
+    private readonly InputAction m_Buider_Scale;
+    private readonly InputAction m_Buider_Reset;
+    private readonly InputAction m_Buider_Scroll;
+    private readonly InputAction m_Buider_ExitBuildMode;
+    public struct BuiderActions
+    {
+        private @PlayerInputActions m_Wrapper;
+        public BuiderActions(@PlayerInputActions wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Build => m_Wrapper.m_Buider_Build;
+        public InputAction @Scale => m_Wrapper.m_Buider_Scale;
+        public InputAction @Reset => m_Wrapper.m_Buider_Reset;
+        public InputAction @Scroll => m_Wrapper.m_Buider_Scroll;
+        public InputAction @ExitBuildMode => m_Wrapper.m_Buider_ExitBuildMode;
+        public InputActionMap Get() { return m_Wrapper.m_Buider; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(BuiderActions set) { return set.Get(); }
+        public void AddCallbacks(IBuiderActions instance)
+        {
+            if (instance == null || m_Wrapper.m_BuiderActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_BuiderActionsCallbackInterfaces.Add(instance);
+            @Build.started += instance.OnBuild;
+            @Build.performed += instance.OnBuild;
+            @Build.canceled += instance.OnBuild;
+            @Scale.started += instance.OnScale;
+            @Scale.performed += instance.OnScale;
+            @Scale.canceled += instance.OnScale;
+            @Reset.started += instance.OnReset;
+            @Reset.performed += instance.OnReset;
+            @Reset.canceled += instance.OnReset;
+            @Scroll.started += instance.OnScroll;
+            @Scroll.performed += instance.OnScroll;
+            @Scroll.canceled += instance.OnScroll;
+            @ExitBuildMode.started += instance.OnExitBuildMode;
+            @ExitBuildMode.performed += instance.OnExitBuildMode;
+            @ExitBuildMode.canceled += instance.OnExitBuildMode;
+        }
+
+        private void UnregisterCallbacks(IBuiderActions instance)
+        {
+            @Build.started -= instance.OnBuild;
+            @Build.performed -= instance.OnBuild;
+            @Build.canceled -= instance.OnBuild;
+            @Scale.started -= instance.OnScale;
+            @Scale.performed -= instance.OnScale;
+            @Scale.canceled -= instance.OnScale;
+            @Reset.started -= instance.OnReset;
+            @Reset.performed -= instance.OnReset;
+            @Reset.canceled -= instance.OnReset;
+            @Scroll.started -= instance.OnScroll;
+            @Scroll.performed -= instance.OnScroll;
+            @Scroll.canceled -= instance.OnScroll;
+            @ExitBuildMode.started -= instance.OnExitBuildMode;
+            @ExitBuildMode.performed -= instance.OnExitBuildMode;
+            @ExitBuildMode.canceled -= instance.OnExitBuildMode;
+        }
+
+        public void RemoveCallbacks(IBuiderActions instance)
+        {
+            if (m_Wrapper.m_BuiderActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        public void SetCallbacks(IBuiderActions instance)
+        {
+            foreach (var item in m_Wrapper.m_BuiderActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_BuiderActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    public BuiderActions @Buider => new BuiderActions(this);
     public interface IPlayerActions
     {
         void OnMove(InputAction.CallbackContext context);
+        void OnEnterBuildMode(InputAction.CallbackContext context);
+    }
+    public interface IBuiderActions
+    {
+        void OnBuild(InputAction.CallbackContext context);
+        void OnScale(InputAction.CallbackContext context);
+        void OnReset(InputAction.CallbackContext context);
+        void OnScroll(InputAction.CallbackContext context);
+        void OnExitBuildMode(InputAction.CallbackContext context);
     }
 }

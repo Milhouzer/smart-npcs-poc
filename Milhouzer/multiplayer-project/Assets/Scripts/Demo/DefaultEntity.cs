@@ -67,4 +67,14 @@ public class DefaultEntity : NetworkBehaviour, ISelectable
         // entityRenderer.material.SetColor("_SecondOutlineColor", Color.white);
         _isSelected.Value = ulong.MaxValue;
     }
+
+    public GameObject Preview()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Build()
+    {
+        throw new NotImplementedException();
+    }
 }

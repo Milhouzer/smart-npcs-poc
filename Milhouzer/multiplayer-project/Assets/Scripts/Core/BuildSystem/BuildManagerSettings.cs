@@ -1,0 +1,30 @@
+using Milhouzer.Input;
+using UnityEngine;
+
+namespace Milhouzer.BuildingSystem
+{
+    /// <summary>
+    /// BuildManagerSettings injected in BuildManager upon it's instantiation 
+    /// </summary>
+    [CreateAssetMenu(fileName = "BuildManagerSettings", menuName = "Builder/BuildManagerSettings", order = 0)]
+    public class BuildManagerSettings : ScriptableObject {
+        /// <summary>
+        /// Objects that can be built.
+        /// </summary>
+        public BuildableCatalog Catalog;
+        /// <summary>
+        /// Preview settings.
+        /// </summary>
+        public PreviewSettings PreviewSettings;
+        /// <summary>
+        /// Input used to detect entering/exiting build mode.
+        /// </summary>
+        public IGameInput Input;
+        /// <summary>
+        /// Camera used to raycast for preview placement.
+        /// </summary>
+        [HideInInspector]
+        public Camera Camera;
+
+    }
+}

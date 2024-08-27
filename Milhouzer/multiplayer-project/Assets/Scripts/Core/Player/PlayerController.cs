@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using Milhouzer.BuildingSystem;
 using Milhouzer.CameraSystem;
 using Milhouzer.Input;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Milhouzer
 {
@@ -53,9 +55,6 @@ namespace Milhouzer
 
     public class PlayerController : NetworkBehaviour
     {
-        [Header("Controller")]
-        [SerializeField]
-        InputReader input;
         /// <summary>
         /// Movement speed of the player. The input is multiplied by this factor.
         /// </summary>
@@ -64,6 +63,7 @@ namespace Milhouzer
 
         [SerializeField]
         CameraController cameraController;
+        public CameraController CamController => cameraController;
 
         [SerializeField]
         AudioListener audioListener;
@@ -121,6 +121,8 @@ namespace Milhouzer
         /// </summary>
         [SerializeField] GameObject clientCube;
 
+        public static event Action<PlayerController> OnPlayerCreatedCallback;
+
         /// <summary>
         /// Instantiate variables instances
         /// </summary>
@@ -146,6 +148,10 @@ namespace Milhouzer
             cameraController.Priority = 100;
             audioListener.enabled = true;
 
+            if(IsOwner) {
+                Debug.Log("[PlayerController] player object created");
+                OnPlayerCreatedCallback?.Invoke(this);
+            }
         }
 
         void Update() {
@@ -212,11 +218,11 @@ namespace Milhouzer
             int currentTick = timer.CurrentTick;
             int bufferIndex = currentTick % k_bufferSize;
 
-            if(input.Move == Vector3.zero) return;
+            if(GameManager.Instance.Input.Move == Vector3.zero) return;
 
             InputPayload inputPayload = new InputPayload() {
                 tick = currentTick,
-                inputVector = input.Move
+                inputVector = GameManager.Instance.Input.Move
             };
 
             clientInputBuffer.Add(inputPayload, bufferIndex);

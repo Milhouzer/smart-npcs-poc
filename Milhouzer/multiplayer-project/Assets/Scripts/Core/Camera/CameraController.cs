@@ -17,6 +17,7 @@ namespace Milhouzer.CameraSystem
         [Header("Camera")]
         [SerializeField]
         Camera cam;
+        public Camera Camera => cam;
 
         [SerializeField]
         Transform _target;
