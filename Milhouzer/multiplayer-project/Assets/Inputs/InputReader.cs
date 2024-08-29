@@ -3,11 +3,14 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Milhouzer.Input {
-    public interface IGameInput : PlayerInputActions.IPlayerActions, PlayerInputActions.IBuiderActions
+    public interface IGameInput : PlayerInputActions.IPlayerActions, PlayerInputActions.IBuiderActions, PlayerInputActions.IAlternativesActions
     {
         public event Action OnEnterBuildModeEvent;
         public event Action OnExitBuildModeEvent;
         public event Action OnBuildEvent;
+        public event Action OnResetEvent;
+        public event Action<Vector2> OnRotateEvent;
+        public event Action<Vector2> OnScaleEvent;
     }
 
     [CreateAssetMenu(fileName = "InputReader", menuName = "Input/Input Reader")]
@@ -21,17 +24,25 @@ namespace Milhouzer.Input {
                 return new Vector3(input.x, 0, input.y);
             }
         }
+
+        private bool Shift = false;
+        private bool Alt = false;
+
         PlayerInputActions inputActions;
 
         public event Action OnEnterBuildModeEvent;
         public event Action OnExitBuildModeEvent;
         public event Action OnBuildEvent;
-        
+        public event Action OnResetEvent;
+        public event Action<Vector2> OnRotateEvent;
+        public event Action<Vector2> OnScaleEvent;
+
         private void OnEnable() {
             if(inputActions == null) {
                 inputActions = new PlayerInputActions();
                 inputActions.Player.SetCallbacks(this);
                 inputActions.Buider.SetCallbacks(this);
+                inputActions.Alternatives.SetCallbacks(this);
             }
 
             inputActions.Enable();
@@ -50,6 +61,21 @@ namespace Milhouzer.Input {
             inputActions.Player.Disable();
         }
         
+        //*******************************//
+        //   ALTERNATIVE INPUT SECTION   //
+        //*******************************//
+        public void OnShift(InputAction.CallbackContext context)
+        {
+            Shift = context.ReadValueAsButton();
+            Debug.Log("[InputReader] Shift: " + Shift);
+        }
+
+        public void OnAlt(InputAction.CallbackContext context)
+        {
+            Alt = context.ReadValueAsButton();
+            Debug.Log("[InputReader] Alt: " + Alt);
+        }
+
         //**************************//
         //  PLAYER INPUT SECTION   //
         //**************************//
@@ -78,19 +104,25 @@ namespace Milhouzer.Input {
             }
         }
 
-        public void OnScale(InputAction.CallbackContext context)
+        public void OnScroll(InputAction.CallbackContext context)
         {
-            Debug.Log("[InputReader] OnScale");
+            if(Alt && !Shift){
+                Vector2 scroll = context.ReadValue<Vector2>();
+                OnScaleEvent?.Invoke(scroll);
+            }
+
+            if(Shift && !Alt){
+                Vector2 scroll = context.ReadValue<Vector2>();
+                OnRotateEvent?.Invoke(scroll);
+            }
         }
 
         public void OnReset(InputAction.CallbackContext context)
         {
-            Debug.Log("[InputReader] OnReset");
-        }
-
-        public void OnScroll(InputAction.CallbackContext context)
-        {
-            Debug.Log("[InputReader] OnScroll");
+            if(context.canceled) {
+                Debug.Log("[InputReader] OnReset");
+                OnResetEvent?.Invoke();
+            }
         }
 
         public void OnExitBuildMode(InputAction.CallbackContext context)

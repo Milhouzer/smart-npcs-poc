@@ -107,27 +107,18 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Scale",
-                    "type": "Button",
-                    "id": "7fb9d672-4a1c-47b9-82f9-904f8c977c37",
-                    "expectedControlType": "Button",
+                    "name": "Scroll",
+                    "type": "Value",
+                    "id": "f268a222-34d7-4566-8af0-5c5273ce9cba",
+                    "expectedControlType": "Axis",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": false
+                    "initialStateCheck": true
                 },
                 {
                     "name": "Reset",
                     "type": "Button",
                     "id": "32faee2b-fb14-4b61-b697-ca0f441cde77",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "Scroll",
-                    "type": "Button",
-                    "id": "2c5fd3e1-99d3-4f9f-8d11-8afb5712eb16",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -157,34 +148,12 @@
                 },
                 {
                     "name": "",
-                    "id": "d381b47f-1c7a-4b97-ad95-1fc153073ab8",
-                    "path": "",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Scale",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "c4b1ccb0-5171-482f-8b4e-76267972f7e6",
-                    "path": "",
+                    "path": "<Mouse>/rightButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "Reset",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "644395c8-da27-4072-b3ac-08a43190db88",
-                    "path": "",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Scroll",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -196,6 +165,65 @@
                     "processors": "",
                     "groups": "",
                     "action": "ExitBuildMode",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "09dd2503-52dc-465d-81d7-226ecce1d6eb",
+                    "path": "<Mouse>/scroll",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Scroll",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "Alternatives",
+            "id": "f2d674c0-988a-4781-b088-8e0f7acf2755",
+            "actions": [
+                {
+                    "name": "Shift",
+                    "type": "Button",
+                    "id": "1d37834d-0168-4011-9666-c4bea83f64be",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Alt",
+                    "type": "Button",
+                    "id": "2eb47871-9914-4d49-a233-bd863ab0aa22",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "1681ce5c-dde5-472d-8c85-939b7707d065",
+                    "path": "<Keyboard>/shift",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Shift",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6fecdd23-50f1-4b49-99ae-59f92b8da150",
+                    "path": "<Keyboard>/alt",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Alt",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

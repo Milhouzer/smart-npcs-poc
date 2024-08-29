@@ -129,27 +129,18 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Scale"",
-                    ""type"": ""Button"",
-                    ""id"": ""7fb9d672-4a1c-47b9-82f9-904f8c977c37"",
-                    ""expectedControlType"": ""Button"",
+                    ""name"": ""Scroll"",
+                    ""type"": ""Value"",
+                    ""id"": ""f268a222-34d7-4566-8af0-5c5273ce9cba"",
+                    ""expectedControlType"": ""Axis"",
                     ""processors"": """",
                     ""interactions"": """",
-                    ""initialStateCheck"": false
+                    ""initialStateCheck"": true
                 },
                 {
                     ""name"": ""Reset"",
                     ""type"": ""Button"",
                     ""id"": ""32faee2b-fb14-4b61-b697-ca0f441cde77"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""Scroll"",
-                    ""type"": ""Button"",
-                    ""id"": ""2c5fd3e1-99d3-4f9f-8d11-8afb5712eb16"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -179,34 +170,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""d381b47f-1c7a-4b97-ad95-1fc153073ab8"",
-                    ""path"": """",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Scale"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""c4b1ccb0-5171-482f-8b4e-76267972f7e6"",
-                    ""path"": """",
+                    ""path"": ""<Mouse>/rightButton"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Reset"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""644395c8-da27-4072-b3ac-08a43190db88"",
-                    ""path"": """",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Scroll"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -218,6 +187,65 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""ExitBuildMode"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""09dd2503-52dc-465d-81d7-226ecce1d6eb"",
+                    ""path"": ""<Mouse>/scroll"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Scroll"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
+        },
+        {
+            ""name"": ""Alternatives"",
+            ""id"": ""f2d674c0-988a-4781-b088-8e0f7acf2755"",
+            ""actions"": [
+                {
+                    ""name"": ""Shift"",
+                    ""type"": ""Button"",
+                    ""id"": ""1d37834d-0168-4011-9666-c4bea83f64be"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Alt"",
+                    ""type"": ""Button"",
+                    ""id"": ""2eb47871-9914-4d49-a233-bd863ab0aa22"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""1681ce5c-dde5-472d-8c85-939b7707d065"",
+                    ""path"": ""<Keyboard>/shift"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Shift"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""6fecdd23-50f1-4b49-99ae-59f92b8da150"",
+                    ""path"": ""<Keyboard>/alt"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Alt"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -233,10 +261,13 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         // Buider
         m_Buider = asset.FindActionMap("Buider", throwIfNotFound: true);
         m_Buider_Build = m_Buider.FindAction("Build", throwIfNotFound: true);
-        m_Buider_Scale = m_Buider.FindAction("Scale", throwIfNotFound: true);
-        m_Buider_Reset = m_Buider.FindAction("Reset", throwIfNotFound: true);
         m_Buider_Scroll = m_Buider.FindAction("Scroll", throwIfNotFound: true);
+        m_Buider_Reset = m_Buider.FindAction("Reset", throwIfNotFound: true);
         m_Buider_ExitBuildMode = m_Buider.FindAction("ExitBuildMode", throwIfNotFound: true);
+        // Alternatives
+        m_Alternatives = asset.FindActionMap("Alternatives", throwIfNotFound: true);
+        m_Alternatives_Shift = m_Alternatives.FindAction("Shift", throwIfNotFound: true);
+        m_Alternatives_Alt = m_Alternatives.FindAction("Alt", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -353,18 +384,16 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_Buider;
     private List<IBuiderActions> m_BuiderActionsCallbackInterfaces = new List<IBuiderActions>();
     private readonly InputAction m_Buider_Build;
-    private readonly InputAction m_Buider_Scale;
-    private readonly InputAction m_Buider_Reset;
     private readonly InputAction m_Buider_Scroll;
+    private readonly InputAction m_Buider_Reset;
     private readonly InputAction m_Buider_ExitBuildMode;
     public struct BuiderActions
     {
         private @PlayerInputActions m_Wrapper;
         public BuiderActions(@PlayerInputActions wrapper) { m_Wrapper = wrapper; }
         public InputAction @Build => m_Wrapper.m_Buider_Build;
-        public InputAction @Scale => m_Wrapper.m_Buider_Scale;
-        public InputAction @Reset => m_Wrapper.m_Buider_Reset;
         public InputAction @Scroll => m_Wrapper.m_Buider_Scroll;
+        public InputAction @Reset => m_Wrapper.m_Buider_Reset;
         public InputAction @ExitBuildMode => m_Wrapper.m_Buider_ExitBuildMode;
         public InputActionMap Get() { return m_Wrapper.m_Buider; }
         public void Enable() { Get().Enable(); }
@@ -378,15 +407,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Build.started += instance.OnBuild;
             @Build.performed += instance.OnBuild;
             @Build.canceled += instance.OnBuild;
-            @Scale.started += instance.OnScale;
-            @Scale.performed += instance.OnScale;
-            @Scale.canceled += instance.OnScale;
-            @Reset.started += instance.OnReset;
-            @Reset.performed += instance.OnReset;
-            @Reset.canceled += instance.OnReset;
             @Scroll.started += instance.OnScroll;
             @Scroll.performed += instance.OnScroll;
             @Scroll.canceled += instance.OnScroll;
+            @Reset.started += instance.OnReset;
+            @Reset.performed += instance.OnReset;
+            @Reset.canceled += instance.OnReset;
             @ExitBuildMode.started += instance.OnExitBuildMode;
             @ExitBuildMode.performed += instance.OnExitBuildMode;
             @ExitBuildMode.canceled += instance.OnExitBuildMode;
@@ -397,15 +423,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Build.started -= instance.OnBuild;
             @Build.performed -= instance.OnBuild;
             @Build.canceled -= instance.OnBuild;
-            @Scale.started -= instance.OnScale;
-            @Scale.performed -= instance.OnScale;
-            @Scale.canceled -= instance.OnScale;
-            @Reset.started -= instance.OnReset;
-            @Reset.performed -= instance.OnReset;
-            @Reset.canceled -= instance.OnReset;
             @Scroll.started -= instance.OnScroll;
             @Scroll.performed -= instance.OnScroll;
             @Scroll.canceled -= instance.OnScroll;
+            @Reset.started -= instance.OnReset;
+            @Reset.performed -= instance.OnReset;
+            @Reset.canceled -= instance.OnReset;
             @ExitBuildMode.started -= instance.OnExitBuildMode;
             @ExitBuildMode.performed -= instance.OnExitBuildMode;
             @ExitBuildMode.canceled -= instance.OnExitBuildMode;
@@ -426,6 +449,60 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         }
     }
     public BuiderActions @Buider => new BuiderActions(this);
+
+    // Alternatives
+    private readonly InputActionMap m_Alternatives;
+    private List<IAlternativesActions> m_AlternativesActionsCallbackInterfaces = new List<IAlternativesActions>();
+    private readonly InputAction m_Alternatives_Shift;
+    private readonly InputAction m_Alternatives_Alt;
+    public struct AlternativesActions
+    {
+        private @PlayerInputActions m_Wrapper;
+        public AlternativesActions(@PlayerInputActions wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Shift => m_Wrapper.m_Alternatives_Shift;
+        public InputAction @Alt => m_Wrapper.m_Alternatives_Alt;
+        public InputActionMap Get() { return m_Wrapper.m_Alternatives; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(AlternativesActions set) { return set.Get(); }
+        public void AddCallbacks(IAlternativesActions instance)
+        {
+            if (instance == null || m_Wrapper.m_AlternativesActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_AlternativesActionsCallbackInterfaces.Add(instance);
+            @Shift.started += instance.OnShift;
+            @Shift.performed += instance.OnShift;
+            @Shift.canceled += instance.OnShift;
+            @Alt.started += instance.OnAlt;
+            @Alt.performed += instance.OnAlt;
+            @Alt.canceled += instance.OnAlt;
+        }
+
+        private void UnregisterCallbacks(IAlternativesActions instance)
+        {
+            @Shift.started -= instance.OnShift;
+            @Shift.performed -= instance.OnShift;
+            @Shift.canceled -= instance.OnShift;
+            @Alt.started -= instance.OnAlt;
+            @Alt.performed -= instance.OnAlt;
+            @Alt.canceled -= instance.OnAlt;
+        }
+
+        public void RemoveCallbacks(IAlternativesActions instance)
+        {
+            if (m_Wrapper.m_AlternativesActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        public void SetCallbacks(IAlternativesActions instance)
+        {
+            foreach (var item in m_Wrapper.m_AlternativesActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_AlternativesActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    public AlternativesActions @Alternatives => new AlternativesActions(this);
     public interface IPlayerActions
     {
         void OnMove(InputAction.CallbackContext context);
@@ -434,9 +511,13 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     public interface IBuiderActions
     {
         void OnBuild(InputAction.CallbackContext context);
-        void OnScale(InputAction.CallbackContext context);
-        void OnReset(InputAction.CallbackContext context);
         void OnScroll(InputAction.CallbackContext context);
+        void OnReset(InputAction.CallbackContext context);
         void OnExitBuildMode(InputAction.CallbackContext context);
+    }
+    public interface IAlternativesActions
+    {
+        void OnShift(InputAction.CallbackContext context);
+        void OnAlt(InputAction.CallbackContext context);
     }
 }

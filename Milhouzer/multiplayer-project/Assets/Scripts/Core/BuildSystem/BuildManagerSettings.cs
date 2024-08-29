@@ -17,10 +17,6 @@ namespace Milhouzer.BuildingSystem
         /// </summary>
         public PreviewSettings PreviewSettings;
         /// <summary>
-        /// Input used to detect entering/exiting build mode.
-        /// </summary>
-        public IGameInput Input;
-        /// <summary>
         /// Camera used to raycast for preview placement.
         /// </summary>
         [HideInInspector]

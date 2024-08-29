@@ -12,5 +12,10 @@ namespace Milhouzer.BuildingSystem
         /// Object to build
         /// </summary>
         public Buildable Object;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public PreviewConstraints Constraints;
     }
 }

@@ -59,10 +59,6 @@ namespace Milhouzer.BuildingSystem
         /// </summary>
         [SerializeField] PreviewSettings previewSettings;
         /// <summary>
-        /// Input used to detect entering/exiting build mode.
-        /// </summary>
-        IGameInput input;
-        /// <summary>
         /// Camera used to raycast for preview placement.
         /// </summary>
         Camera cam;
@@ -93,28 +89,10 @@ namespace Milhouzer.BuildingSystem
             catalog = settings.Catalog;
             catalog.Init();
 
+            cam = settings.Camera;
+
             if(IsClient) {
                 previewSettings = settings.PreviewSettings;
-                input = settings.Input;
-                cam = settings.Camera;
-
-                input.OnEnterBuildModeEvent += EnterBuildMode_Internal;
-                input.OnExitBuildModeEvent += ExitBuildMode_Internal;
-                input.OnBuildEvent += OnBuild;
-            }
-        }
-
-        /// <summary>
-        /// OnDestroy Unity event: unregister input callbacks for client
-        /// </summary>
-        public override void OnDestroy() {
-            base.OnDestroy();
-
-            if(IsClient && input != null)
-            {
-                input.OnEnterBuildModeEvent -= EnterBuildMode_Internal;
-                input.OnExitBuildModeEvent -= ExitBuildMode_Internal;
-                input.OnBuildEvent -= OnBuild;
             }
         }
         
@@ -155,7 +133,7 @@ namespace Milhouzer.BuildingSystem
         /// <summary>
         /// Enter build mode input callback
         /// </summary>
-        private void EnterBuildMode_Internal() {
+        public void RequestEnterBuildMode() {
             if(_isBuilding) return;
 
             Debug.Log("[BuildManager] enter building mode");
@@ -167,7 +145,7 @@ namespace Milhouzer.BuildingSystem
         /// <summary>
         /// Exit build mode input callback
         /// </summary>
-        private void ExitBuildMode_Internal() {
+        public void RequestExitBuildMode() {
             if(!_isBuilding) return;
 
             Debug.Log("[BuildManager] exit building mode");
@@ -180,18 +158,43 @@ namespace Milhouzer.BuildingSystem
         }
 
         /// <summary>
+        /// Input handle to rotate 
+        /// </summary>
+        public void RequestPreviewRotation(Vector2 amount) {
+            preview.Rotate(amount.y);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void RequestPreviewScale(Vector2 amount) {
+            preview.Scale(amount.y);
+        }
+
+        /// <summary>
         /// Sends a server rpc to build the selected object.
         /// </summary>
-        private void OnBuild()
+        public void RequestBuild()
         {
             BuildPayload payload = new BuildPayload(
                 index,
                 preview.Position,
                 preview.Rotation,
-                Vector3.one
+                preview.LocalScale
 
             );
             BuildServerRpc(payload);
+        }
+        
+
+        /// <summary>
+        /// Sends a server rpc to build the selected object.
+        /// </summary>
+        public void RequestReset()
+        {
+            if(preview != null) {
+                preview.Reset();
+            }
         }
 
         /// <summary>
@@ -205,6 +208,7 @@ namespace Milhouzer.BuildingSystem
             
             BuildableElement elem = catalog[buildPayload.index];
             GameObject instantiatedObject = Instantiate(elem.Object.gameObject, buildPayload.position, buildPayload.rotation);
+            instantiatedObject.transform.localScale = buildPayload.scale;
             NetworkObject networkObject = instantiatedObject.GetComponent<NetworkObject>();
             if (networkObject != null)
             {

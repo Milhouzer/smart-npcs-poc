@@ -38,9 +38,13 @@ namespace Milhouzer.BuildingSystem
                 }
             }
 
+            // Disable the animator because it blocks preview scaling...
+            Animator anim = GetComponentInChildren<Animator>();
+            if(anim) anim.enabled = false;
+
             go.transform.localScale = scale;
 
             return go;
         }
     }
-    }
+}

@@ -74,9 +74,14 @@ public class GameManager : NetworkedSingleton<GameManager>
     /// <param name="settings"></param>
     void InitClientBuildManager(BuildManagerSettings settings) {
         settings = Instantiate(settings);
-        settings.Input = input;
         settings.Camera = playerCamera;
         BuildManager.Instance.Init(settings);
+        input.OnEnterBuildModeEvent += BuildManager.Instance.RequestEnterBuildMode;
+        input.OnExitBuildModeEvent += BuildManager.Instance.RequestExitBuildMode;
+        input.OnBuildEvent += BuildManager.Instance.RequestBuild;
+        input.OnRotateEvent += BuildManager.Instance.RequestPreviewRotation;
+        input.OnScaleEvent += BuildManager.Instance.RequestPreviewScale;
+        input.OnResetEvent += BuildManager.Instance.RequestReset;
     }
 
     /// <summary>

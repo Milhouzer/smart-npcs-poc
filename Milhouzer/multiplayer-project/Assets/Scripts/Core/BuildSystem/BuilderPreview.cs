@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Milhouzer.BuildingSystem
@@ -30,6 +31,7 @@ namespace Milhouzer.BuildingSystem
         // Accessors
         public Vector3 Position => currentPreview == null ? Vector3.zero : currentPreview.transform.position;
         public Quaternion Rotation => currentPreview == null ? Quaternion.identity : currentPreview.transform.rotation;
+        public Vector3 LocalScale => currentPreview == null ? Vector3.zero : currentPreview.transform.localScale;
         
         /// <summary>
         /// Default constructors, sets material, layer and buildable element. 
@@ -60,8 +62,27 @@ namespace Milhouzer.BuildingSystem
             }
 
             currentPreview.transform.position = pos;
-            currentPreview.transform.rotation = rot;
-            currentPreview.transform.localScale = scale;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="amount"></param>
+        public void Rotate(float amount) {
+            currentPreview.transform.rotation = buildable.Constraints.Rotate(currentPreview.transform.rotation, amount);
+        }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="amount"></param>
+        public void Scale(float amount) {
+            currentPreview.transform.localScale = buildable.Constraints.Scale(currentPreview.transform.localScale, amount);
+        }
+
+        public void Reset() {
+            currentPreview.transform.rotation = Quaternion.identity;
+            currentPreview.transform.localScale = Vector3.one;
         }
 
         /// <summary>

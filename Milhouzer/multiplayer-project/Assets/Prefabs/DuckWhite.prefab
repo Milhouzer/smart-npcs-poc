@@ -71,7 +71,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 161298977
+  GlobalObjectIdHash: 3996354497
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -129,6 +129,7 @@ MonoBehaviour:
   disableComponents:
   - {fileID: 6058075301706742334}
   - {fileID: 290510268404199219}
+  - {fileID: 566535639792380454}
   - {fileID: 566535639792380454}
 --- !u!1 &6820349152332780731
 GameObject:
@@ -222,7 +223,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6820349152332780731}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Avatar: {fileID: 9000000, guid: 82d0b33fd2ad44744aa557711150e99e, type: 3}
   m_Controller: {fileID: 9100000, guid: 21f373062d5130e46b52f743a7f3dad2, type: 2}
   m_CullingMode: 0
