@@ -17,7 +17,7 @@ Closing a client will only disconnect it and won't impact other clients directly
 
 ### Controls
 
-Use directional arrows to move, use B to enable/disable the build mode.
+Use directional arrows to move, use B to enable the build mode.
 
 #### 1- Normal mode
 
@@ -25,8 +25,9 @@ Move the player/camera using directional arrows.
 
 #### 2- Build mode
 
-Enable/Disable build mode with B.
-Objects can be built with left click.
+- Disable build mode with B.
+- Objects can be rotated (respectively scaled) by holding shifht (respectively alt) and scrolling.
+- Objects can be built with left click.
 
 ## API
 
