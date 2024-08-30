@@ -8,9 +8,5 @@ namespace Milhouzer.BuildingSystem
         CircularBuffer<BuildableElement> buildables;
 
         public BuildableElement this[int index] => buildables.Get(index);
-
-        public void Init() {
-            // buildables = new CircularBuffer<BuildableElement>(buildables);
-        }
     }
 }

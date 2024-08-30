@@ -3,14 +3,23 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Milhouzer.Input {
-    public interface IGameInput : PlayerInputActions.IPlayerActions, PlayerInputActions.IBuiderActions, PlayerInputActions.IAlternativesActions
+    public interface IGameInput : 
+            IBuildInput, 
+            PlayerInputActions.IPlayerActions,
+            PlayerInputActions.IBuiderActions, 
+            PlayerInputActions.IAlternativesActions
     {
         public event Action OnEnterBuildModeEvent;
+    }
+
+    public interface IBuildInput
+    {
         public event Action OnExitBuildModeEvent;
         public event Action OnBuildEvent;
         public event Action OnResetEvent;
         public event Action<Vector2> OnRotateEvent;
         public event Action<Vector2> OnScaleEvent;
+        public event Action<int> OnSelectEvent;
     }
 
     [CreateAssetMenu(fileName = "InputReader", menuName = "Input/Input Reader")]
@@ -36,6 +45,7 @@ namespace Milhouzer.Input {
         public event Action OnResetEvent;
         public event Action<Vector2> OnRotateEvent;
         public event Action<Vector2> OnScaleEvent;
+        public event Action<int> OnSelectEvent;
 
         private void OnEnable() {
             if(inputActions == null) {
@@ -106,6 +116,11 @@ namespace Milhouzer.Input {
 
         public void OnScroll(InputAction.CallbackContext context)
         {
+            if(!Alt && !Shift){
+                Vector2 scroll = context.ReadValue<Vector2>();
+                OnSelectEvent?.Invoke((int)Mathf.Sign(scroll.y));
+            }
+
             if(Alt && !Shift){
                 Vector2 scroll = context.ReadValue<Vector2>();
                 OnScaleEvent?.Invoke(scroll);

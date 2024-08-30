@@ -15,7 +15,7 @@ MonoBehaviour:
   buildables:
     buffer:
     - {fileID: 11400000, guid: 779659aaf7b8a014ca82462bf8b96c0b, type: 2}
-    - {fileID: 11400000, guid: 779659aaf7b8a014ca82462bf8b96c0b, type: 2}
-    - {fileID: 11400000, guid: 779659aaf7b8a014ca82462bf8b96c0b, type: 2}
-    - {fileID: 11400000, guid: 779659aaf7b8a014ca82462bf8b96c0b, type: 2}
-    - {fileID: 11400000, guid: 779659aaf7b8a014ca82462bf8b96c0b, type: 2}
+    - {fileID: 11400000, guid: e907f479d22b0fb4eb62bd7dfbbf52c0, type: 2}
+    - {fileID: 11400000, guid: cb23e59e081a3f044835335559e627e4, type: 2}
+    - {fileID: 11400000, guid: a799545710c04db439ee90775e787714, type: 2}
+    - {fileID: 11400000, guid: 1529c90eb9938184f8096c0888e874c9, type: 2}

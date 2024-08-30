@@ -82,6 +82,7 @@ public class GameManager : NetworkedSingleton<GameManager>
         input.OnRotateEvent += BuildManager.Instance.RequestPreviewRotation;
         input.OnScaleEvent += BuildManager.Instance.RequestPreviewScale;
         input.OnResetEvent += BuildManager.Instance.RequestReset;
+        input.OnSelectEvent += BuildManager.Instance.RequestSelect;
     }
 
     /// <summary>

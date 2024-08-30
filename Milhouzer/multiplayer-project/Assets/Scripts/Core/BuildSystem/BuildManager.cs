@@ -71,6 +71,10 @@ namespace Milhouzer.BuildingSystem
         /// </summary>
         int index = 0;
         /// <summary>
+        /// Marker to indicate the selection index changed
+        /// </summary>
+        Timer UpdatePreviewTimer;
+        /// <summary>
         /// True if is build mode, false otherwise.
         /// </summary>
         bool _isBuilding;
@@ -87,12 +91,11 @@ namespace Milhouzer.BuildingSystem
         public void Init(BuildManagerSettings settings)
         {
             catalog = settings.Catalog;
-            catalog.Init();
-
             cam = settings.Camera;
 
             if(IsClient) {
                 previewSettings = settings.PreviewSettings;
+                UpdatePreviewTimer = new(0.3f, UpdatePreview);
             }
         }
         
@@ -114,6 +117,10 @@ namespace Milhouzer.BuildingSystem
                 {
                     Preview(hit.point);
                 }
+
+                if(UpdatePreviewTimer.IsRunning){
+                    UpdatePreviewTimer.Update(Time.deltaTime);
+                } 
             }
         }
 
@@ -138,6 +145,7 @@ namespace Milhouzer.BuildingSystem
 
             Debug.Log("[BuildManager] enter building mode");
             preview = new BuilderPreview(catalog[index], previewSettings);
+            UpdatePreviewTimer.Restart();
             _isBuilding = true;
             OnEnterBuildMode?.Invoke();
         }
@@ -153,8 +161,37 @@ namespace Milhouzer.BuildingSystem
                 preview.Cleanup();
                 preview = null;
             }
+            UpdatePreviewTimer.Stop();
             _isBuilding = false;
             OnExitBuildMode?.Invoke();
+        }
+
+        /// <summary>
+        /// Request selection change on the catalog
+        /// </summary>
+        /// <param name="amount"></param>
+        internal void RequestSelect(int amount)
+        {
+            index += amount;
+            NotifyIndexChanged_Internal();
+        }
+
+        /// <summary>
+        /// Notify that the selection has changed, reset the timer to update the preview.
+        /// </summary>
+        private void NotifyIndexChanged_Internal()
+        {
+            UpdatePreviewTimer.Restart();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void UpdatePreview() {
+            Debug.Log("[BuildManager] update preview for index " + index);
+            preview.Cleanup();
+            preview = new BuilderPreview(catalog[Mathf.Abs(index)], previewSettings);
+            UpdatePreviewTimer.Stop();
         }
 
         /// <summary>
