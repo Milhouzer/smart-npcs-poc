@@ -14,8 +14,16 @@ namespace Milhouzer.BuildingSystem
         public Buildable Object;
 
         /// <summary>
-        /// 
+        /// Constraints of the preview (rotation, scaling, etc.)
         /// </summary>
         public PreviewConstraints Constraints;
+
+        /// <summary>
+        /// Icon of the preview object displayed in the UI.
+        /// </summary>
+        /// <remarks>
+        /// This shouldn't be here right ?
+        /// </remarks>
+        public Sprite Icon;
     }
 }

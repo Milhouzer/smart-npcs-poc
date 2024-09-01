@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Milhouzer.Input;
 using Milhouzer.Utils;
 using Unity.Netcode;
@@ -55,6 +56,11 @@ namespace Milhouzer.BuildingSystem
         /// </summary>
         [SerializeField] BuildableCatalog catalog;
         /// <summary>
+        /// Catalog accessor
+        /// </summary>
+        public BuildableCatalog Catalog => catalog;
+
+        /// <summary>
         /// Preview settings.
         /// </summary>
         [SerializeField] PreviewSettings previewSettings;
@@ -71,6 +77,10 @@ namespace Milhouzer.BuildingSystem
         /// </summary>
         int index = 0;
         /// <summary>
+        /// <see cref="index"/> accessor.
+        /// </summary>
+        public int Selected =>  index % catalog.Count();
+        /// <summary>
         /// Marker to indicate the selection index changed
         /// </summary>
         Timer UpdatePreviewTimer;
@@ -79,10 +89,21 @@ namespace Milhouzer.BuildingSystem
         /// </summary>
         bool _isBuilding;
 
+        public delegate void ManagerInstantiated();
+        public static event ManagerInstantiated OnManagerInstantiated;
         public delegate void EnterBuildMode();
         public event EnterBuildMode OnEnterBuildMode;
         public delegate void ExitBuildMode();
         public event ExitBuildMode OnExitBuildMode;
+        public delegate void BuildSelectionChange(int index);
+        public event BuildSelectionChange OnBuildSelectionChange;
+
+
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+            OnManagerInstantiated?.Invoke();
+        }
 
         /// <summary>
         /// Init method, register callbacks for client and initialize objects catalog on both client and server.
@@ -172,7 +193,7 @@ namespace Milhouzer.BuildingSystem
         /// <param name="amount"></param>
         internal void RequestSelect(int amount)
         {
-            index += amount;
+            index = (index + amount % catalog.Count() + catalog.Count()) % catalog.Count();
             NotifyIndexChanged_Internal();
         }
 
@@ -182,6 +203,7 @@ namespace Milhouzer.BuildingSystem
         private void NotifyIndexChanged_Internal()
         {
             UpdatePreviewTimer.Restart();
+            OnBuildSelectionChange?.Invoke(Selected);
         }
 
         /// <summary>

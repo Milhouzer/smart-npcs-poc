@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Object: {fileID: 8064491261538973137, guid: 232d4e3e0f6032b4b855471459b8c84a, type: 3}
   Constraints: {fileID: 11400000, guid: 6820e4977faad3c409afe4b947e43e90, type: 2}
+  Icon: {fileID: 21300000, guid: 1a42899f55a70eb4caa3bc4fc1c5a075, type: 3}

@@ -7,10 +7,13 @@ public class NetworkManagerUI : MonoBehaviour
 {
     [SerializeField]
     GameManager gameManager;
+    [SerializeField]
+    CanvasGroup debugConsole;
 
     [SerializeField] Button serverBtn;
     [SerializeField] Button hostBtn;
     [SerializeField] Button clientBtn;
+    [SerializeField] Button debugConsoleBtn;
 
     [SerializeField] Transform players;
     [SerializeField] PlayerCard playerCard;
@@ -26,6 +29,9 @@ public class NetworkManagerUI : MonoBehaviour
         });
         clientBtn.onClick.AddListener(() => {
             NetworkManager.Singleton.StartClient();
+        });
+        debugConsoleBtn.onClick.AddListener(() => {
+            debugConsole.Toggle();
         });
 
         gameManager.OnPlayerConnectedCallback += PlayerConnected;

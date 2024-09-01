@@ -118,7 +118,9 @@ namespace Milhouzer.Input {
         {
             if(!Alt && !Shift){
                 Vector2 scroll = context.ReadValue<Vector2>();
-                OnSelectEvent?.Invoke((int)Mathf.Sign(scroll.y));
+                int fscroll = (int)Mathf.Sign(scroll.y);
+                Debug.Log(fscroll);
+                OnSelectEvent?.Invoke(fscroll);
             }
 
             if(Alt && !Shift){
