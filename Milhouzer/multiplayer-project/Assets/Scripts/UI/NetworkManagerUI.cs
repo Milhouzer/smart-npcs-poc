@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Unity.Netcode;
+// using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,18 +21,18 @@ public class NetworkManagerUI : MonoBehaviour
     Dictionary<string, PlayerCard> cards = new();
 
     private void Start() {
-        serverBtn.onClick.AddListener(() => {
-            NetworkManager.Singleton.StartServer();
-        });
-        hostBtn.onClick.AddListener(() => {
-            NetworkManager.Singleton.StartHost();
-        });
-        clientBtn.onClick.AddListener(() => {
-            NetworkManager.Singleton.StartClient();
-        });
-        debugConsoleBtn.onClick.AddListener(() => {
-            debugConsole.Toggle();
-        });
+        // serverBtn.onClick.AddListener(() => {
+        //     NetworkManager.Singleton.StartServer();
+        // });
+        // hostBtn.onClick.AddListener(() => {
+        //     NetworkManager.Singleton.StartHost();
+        // });
+        // clientBtn.onClick.AddListener(() => {
+        //     NetworkManager.Singleton.StartClient();
+        // });
+        // debugConsoleBtn.onClick.AddListener(() => {
+        //     debugConsole.Toggle();
+        // });
 
         gameManager.OnPlayerConnectedCallback += PlayerConnected;
         gameManager.OnPlayerDisconnectedCallback += PlayerDisconnected;

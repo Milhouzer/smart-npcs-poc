@@ -1,11 +1,11 @@
 using System;
 using Unity.Collections;
-using Unity.Netcode;
+// using Unity.Netcode;
 using UnityEngine;
 
 
 [Serializable]
-public struct PlayerData : INetworkSerializable, IEquatable<PlayerData>
+public struct PlayerData : /*INetworkSerializable,*/ IEquatable<PlayerData>
 {
     public ulong _clientId;
     public ulong Id => _clientId;
@@ -28,10 +28,10 @@ public struct PlayerData : INetworkSerializable, IEquatable<PlayerData>
         return other.Username == Username;
     }
 
-    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-    {
-        serializer.SerializeValue(ref _clientId);
-        serializer.SerializeValue(ref _username);
-        serializer.SerializeValue(ref _color);
-    }
+    // public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    // {
+    //     serializer.SerializeValue(ref _clientId);
+    //     serializer.SerializeValue(ref _username);
+    //     serializer.SerializeValue(ref _color);
+    // }
 }
