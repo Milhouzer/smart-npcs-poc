@@ -260,6 +260,9 @@ namespace Milhouzer.BuildingSystem
         /// Spawn the selected object on the network for all clients.
         /// </summary>
         /// <param name="inputPayload"></param>
+        /// <TODO>
+        /// Server should not instantiate but only reconciliate.
+        /// </TODO>
         [ServerRpc(RequireOwnership = false)]
         void BuildServerRpc(BuildPayload buildPayload)
         {
