@@ -1,7 +1,7 @@
 using System.Linq;
 using UnityEngine;
 
-namespace Milhouzer.BuildingSystem.UI
+namespace Milhouzer.Core.BuildSystem.UI
 {
     public class CatalogUI : MonoBehaviour {
         

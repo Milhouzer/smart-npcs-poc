@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Milhouzer.BuildingSystem.UI
+namespace Milhouzer.Core.BuildSystem.UI
 {        
     public class BuilderUI : MonoBehaviour
     {

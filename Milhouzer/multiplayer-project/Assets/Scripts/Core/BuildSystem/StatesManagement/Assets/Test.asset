@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 642bc51899182fd46b05e872d31f345a, type: 3}
+  m_Name: Test
+  m_EditorClassIdentifier: 
+  Nodes:
+  - Symbol: 97
+    UID: FARMLAND
+    Child:
+    - Symbol: 49
+      UID: FARMLAND.TOMATO
+      Child:
+      - Symbol: 99
+        UID: FARMLAND.TOMATO.MEDIUM
+        Child:
+        - Symbol: 100
+          UID: FARMLAND.TOMATO.BIG
+          Child: []
+    - Symbol: 101
+      UID: FARMLAND.BEANS
+      Child: []
+  - Symbol: 102
+    UID: FENCE
+    Child:
+    - Symbol: 103
+      UID: FENCE.OPENED
+      Child: []
+  - Symbol: 104
+    UID: CHICKEN
+    Child:
+    - Symbol: 103
+      UID: FENCE.OPENED
+      Child: []

@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Milhouzer.BuildingSystem.UI
+namespace Milhouzer.Core.BuildSystem.UI
 {
     public class CatalogElement : MonoBehaviour {
         [SerializeField] Image Icon;

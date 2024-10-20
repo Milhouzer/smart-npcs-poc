@@ -16,6 +16,7 @@ namespace Milhouzer.Input {
     {
         public event Action OnExitBuildModeEvent;
         public event Action OnBuildEvent;
+        public event Action OnUpdateBuild;
         public event Action OnResetEvent;
         public event Action<Vector2> OnRotateEvent;
         public event Action<Vector2> OnScaleEvent;
@@ -42,6 +43,7 @@ namespace Milhouzer.Input {
         public event Action OnEnterBuildModeEvent;
         public event Action OnExitBuildModeEvent;
         public event Action OnBuildEvent;
+        public event Action OnUpdateBuild;
         public event Action OnResetEvent;
         public event Action<Vector2> OnRotateEvent;
         public event Action<Vector2> OnScaleEvent;
@@ -107,35 +109,59 @@ namespace Milhouzer.Input {
         //**************************//
         public void OnBuild(InputAction.CallbackContext context)
         {
-            if (context.performed)
-            {
+            
+            if (context.canceled) goto canceled;
+            else return;
+            
+            canceled:
+
+            if(Alt) {
                 Debug.Log("[InputReader] OnBuild");
-                OnBuildEvent?.Invoke();
+                OnUpdateBuild?.Invoke();
+                return;
             }
+
+            Debug.Log("[InputReader] OnBuild");
+            OnBuildEvent?.Invoke();
+            return;
         }
 
         public void OnScroll(InputAction.CallbackContext context)
         {
+            if(context.started) goto started;
+            else return;
+            
+            started:
+
             if(!Alt && !Shift){
                 Vector2 scroll = context.ReadValue<Vector2>();
                 int fscroll = (int)Mathf.Sign(scroll.y);
                 Debug.Log(fscroll);
                 OnSelectEvent?.Invoke(fscroll);
+                return;
             }
 
             if(Alt && !Shift){
                 Vector2 scroll = context.ReadValue<Vector2>();
                 OnScaleEvent?.Invoke(scroll);
+                return;
             }
 
             if(Shift && !Alt){
                 Vector2 scroll = context.ReadValue<Vector2>();
                 OnRotateEvent?.Invoke(scroll);
+                return;
             }
+            return;
         }
 
         public void OnReset(InputAction.CallbackContext context)
         {
+            if(context.started) goto started;
+            else return;
+            
+            started:
+            
             if(context.canceled) {
                 Debug.Log("[InputReader] OnReset");
                 OnResetEvent?.Invoke();

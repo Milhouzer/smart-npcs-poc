@@ -6,7 +6,7 @@ using Milhouzer.Utils;
 using Unity.Netcode;
 using UnityEngine;
 using Milhouzer.Input;
-using Milhouzer.BuildingSystem;
+using Milhouzer.Core.BuildSystem;
 using Milhouzer;
 
 public class GameManager : NetworkedSingleton<GameManager>
@@ -79,10 +79,17 @@ public class GameManager : NetworkedSingleton<GameManager>
         input.OnEnterBuildModeEvent += BuildManager.Instance.RequestEnterBuildMode;
         input.OnExitBuildModeEvent += BuildManager.Instance.RequestExitBuildMode;
         input.OnBuildEvent += BuildManager.Instance.RequestBuild;
+        input.OnUpdateBuild += UpdateTargetedBuild;
         input.OnRotateEvent += BuildManager.Instance.RequestPreviewRotation;
         input.OnScaleEvent += BuildManager.Instance.RequestPreviewScale;
         input.OnResetEvent += BuildManager.Instance.RequestReset;
         input.OnSelectEvent += BuildManager.Instance.RequestSelect;
+    }
+
+    private void UpdateTargetedBuild()
+    {
+        if(!BuildManager.CurrentPointedObject.TryGetComponent<IStateObject>(out IStateObject stateObject)) return;
+        BuildManager.Instance.RequestBuildUpdate(stateObject, stateObject.Identifier,  '1');
     }
 
     /// <summary>
