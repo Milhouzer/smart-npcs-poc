@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using Milhouzer.Core.BuildSystem;
 using Milhouzer.CameraSystem;
-using Milhouzer.Input;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-namespace Milhouzer
+namespace Milhouzer.Core.Player
 {
     /// <summary>
     /// InputPaylod contains input information : 

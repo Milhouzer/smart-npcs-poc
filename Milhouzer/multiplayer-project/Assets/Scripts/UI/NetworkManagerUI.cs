@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Milhouzer.Core;
+using Milhouzer.Core.Player;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
@@ -40,7 +42,6 @@ public class NetworkManagerUI : MonoBehaviour
     
     private void PlayerConnected(PlayerData playerData)
     {
-        Debug.Log("okok");
         PlayerCard card = Instantiate(playerCard);
 
         // Pimp card

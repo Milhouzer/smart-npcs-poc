@@ -91,7 +91,7 @@ namespace Milhouzer.Core.BuildSystem.StatesManagement
 
             Node rootNode = Namespace.GetNode(root);
             if(rootNode.Equals(default(Node))){
-                Debug.Log($"Root node {root} is null");
+                Debug.LogWarning($"Root node {root} is null");
                 return false;
             }
             
@@ -120,18 +120,18 @@ namespace Milhouzer.Core.BuildSystem.StatesManagement
 
             Node currentNode = Namespace.GetNode(InternalServerStates[i]);
             if(currentNode.Equals(default(Node))){
-                Debug.Log($"Node {InternalServerStates[i]} is null");
+                Debug.LogWarning($"Node {InternalServerStates[i]} is null");
                 return false;
             }
 
             if(currentNode.Symbol != cur) {
-                Debug.Log($"Node {InternalServerStates[i]} cannot be updated, cur and symbol are different: {currentNode.Symbol}, {cur}");
+                Debug.LogWarning($"Node {InternalServerStates[i]} cannot be updated, cur and symbol are different: {currentNode.Symbol}, {cur}");
                 return false;
             }
 
             Node nextNode = currentNode.GetChild(next);
             if(currentNode.Equals(default(Node))){
-                Debug.Log($"Node {InternalServerStates[i]} has no child {next}");
+                Debug.LogWarning($"Node {InternalServerStates[i]} has no child {next}");
                 return false;
             }
 
