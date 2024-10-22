@@ -63,16 +63,30 @@ namespace Milhouzer.Core.BuildSystem.StatesManagement
             
             if (IsServer)
             {
-                // TODO: Load save, do server logic.
+                // TODO(IMPROVEMENT): Load save, do server logic.
             }
         }
 
         internal string GetUID(char c)
         {
-            Node? node = Namespace.GetNode(c);
-            if(node == null) return "";
+            Node node = Namespace.GetNode(c);
+            if(node.Equals(default(Node))){
+                Debug.LogWarning($"Node {c} is null");
+                return "";
+            }
 
-            return node?.UID;
+            return node.UID;
+        }
+
+        internal char* GetSymbol(string UID)
+        {
+            Node node = Namespace.GetNode(UID);
+            if(node.Equals(default(Node))){
+                Debug.LogWarning($"Node {UID} is null");
+                return null;
+            }
+
+            return &node.Symbol;
         }
 
         #endregion

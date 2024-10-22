@@ -18,7 +18,7 @@ namespace Milhouzer.Core.BuildSystem
         /// State identifier
         /// </summary>
         /// <value></value>
-        public char Identifier { get; set; }
+        public string UID { get; set; }
 
         /// <summary>
         /// Destroy the state holder object.

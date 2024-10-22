@@ -111,5 +111,13 @@ namespace Milhouzer.Core.BuildSystem.StatesManagement
 
             return default(Node);
         }
+
+        public List<Node> GetChild(string UID) 
+        {
+            Node node = GetNode(UID);
+            if(!Object.ReferenceEquals(node, default)) return null;
+
+            return node.Child;
+        }
     }
 }

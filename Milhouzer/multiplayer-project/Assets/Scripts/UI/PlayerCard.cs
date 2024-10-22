@@ -3,25 +3,28 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class PlayerCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+namespace Milhouzer.UI
 {
-    [SerializeField] Image _icon;
-    [SerializeField] Image _infos;
-
-    public void OnPointerEnter(PointerEventData eventData)
+    public class PlayerCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
-        _infos.gameObject.SetActive(true);
-    }
+        [SerializeField] Image _icon;
+        [SerializeField] Image _infos;
 
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        _infos.gameObject.SetActive(false);
-    }
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            _infos.gameObject.SetActive(true);
+        }
 
-    // [SerializeField] PlayerInfos Infos;
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            _infos.gameObject.SetActive(false);
+        }
 
-    public void SetPlayer(PlayerData player) {
-        _icon.color = player.Color;
-        _infos.color = player.Color;
+        // [SerializeField] PlayerInfos Infos;
+
+        public void SetPlayer(PlayerData player) {
+            _icon.color = player.Color;
+            _infos.color = player.Color;
+        }
     }
 }

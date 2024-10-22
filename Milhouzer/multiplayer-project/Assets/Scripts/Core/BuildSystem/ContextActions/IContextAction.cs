@@ -2,12 +2,11 @@ using UnityEngine;
 
 namespace Milhouzer.Core.BuildSystem.ContextActions
 {
-    [CreateAssetMenu(fileName = "IContextAction", menuName = "IContextAction", order = 0)]
-    public abstract class ContextAction<T> : ScriptableObject, IContextAction<T> where T : IContextActionHandler
+    public abstract class ContextAction : ScriptableObject, IContextAction<IContextActionHandler>
     {
-        public void Execute(T handler) => ExecuteImpl(handler);
+        public void Execute(IContextActionHandler handler) => ExecuteImpl(handler);
 
-        protected abstract void ExecuteImpl(T handler);
+        protected abstract void ExecuteImpl(IContextActionHandler handler);
     }
 
     public interface IContextAction<T> where T : IContextActionHandler {
