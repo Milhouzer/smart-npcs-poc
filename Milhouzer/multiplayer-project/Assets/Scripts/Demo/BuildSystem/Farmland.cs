@@ -7,16 +7,16 @@ namespace Milhouzer.Game.BuildSystem
     public class Farmland : MonoBehaviour, IStateObject, IContextActionHandler
     {
         [HideInInspector]
-        public char Identifier { get; set; }
+        public string UID { get; set; }
 
         public void Destroy()
         {
             Destroy(gameObject);
         }
 
-        public void PlantSeed(Seed seed){
-
-            BuildManager.Instance.RequestBuildUpdate(this, Identifier, seed.Transition);
+        public void PlantSeed(Seed seed)
+        {
+            BuildManager.Instance.RequestBuildUpdate(this, UID + "." + seed.Name);
         }
     }
 }

@@ -11,9 +11,7 @@ namespace Milhouzer.Core.Player
     /// - tick          : tick at which the input was received
     /// - inputVector   : value of the input
     /// </summary>
-    /// <TODO>
-    /// Create generic InputPayload<T> struct to handle different value types
-    /// </TODO>
+    /// TODO(MINOR):Create generic InputPayload<T> struct to handle different value types
     public struct InputPayload : INetworkSerializable
     {
         public int tick;

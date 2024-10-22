@@ -4,7 +4,6 @@ using System.Linq;
 using Milhouzer.Core.BuildSystem.StatesManagement;
 using Milhouzer.Utils;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Milhouzer.Core.BuildSystem
@@ -21,7 +20,7 @@ namespace Milhouzer.Core.BuildSystem
     /// <summary>
     /// BuildManager handles the building system, objects are previewed locally, a ServerRpc is sent to spawn objects on the network.
     /// </summary>
-    public class BuildManager : NetworkedSingleton<BuildManager> 
+    public unsafe class BuildManager : NetworkedSingleton<BuildManager> 
     {
         #region Attributes
 
@@ -71,11 +70,6 @@ namespace Milhouzer.Core.BuildSystem
         Timer UpdatePreviewTimer;
 
         /// <summary>
-        /// True if is build mode, false otherwise.
-        /// </summary>
-        bool _isBuilding;
-
-        /// <summary>
         /// Client-side saved states to represent 3d objects.
         /// </summary>
         /// <returns></returns>
@@ -114,11 +108,10 @@ namespace Milhouzer.Core.BuildSystem
         public void Init(BuildManagerSettings settings)
         {
             catalog = settings.Catalog;
-            cam = settings.Camera;
 
             if(IsClient) {
                 previewSettings = settings.PreviewSettings;
-                UpdatePreviewTimer = new(0.3f, UpdatePreview);
+                UpdatePreviewTimer = new Timer(0.3f, UpdatePreviewObject);
                 SyncVisuals();
                 StatesManager.Instance.ReplicatedStates.OnListChanged += OnClientStatesChanged;
             }
@@ -219,7 +212,7 @@ namespace Milhouzer.Core.BuildSystem
                 return;
             }
 
-            holder.Identifier = c;
+            holder.UID = UID;
             if(States.TryGetValue(index, out IStateObject existing))
             {
                 existing.Destroy();
@@ -246,57 +239,16 @@ namespace Milhouzer.Core.BuildSystem
 
         #region Preview controls
 
-        private void Update() {
-            HandleClientTick();
-        }
-
-        public static GameObject CurrentPointedObject;
-
-        /// <summary>
-        /// If in building mode, preview object at the pointed position.
-        /// </summary>
-        private void HandleClientTick()
-        {
-            if(IsServer) return;
-
-            if(_isBuilding && cam != null) 
-            {
-                RaycastHit hit;
-                if (Physics.Raycast(cam.ScreenPointToRay(UnityEngine.Input.mousePosition), out hit, 150f, ~(1 << 10)))
-                {
-                    CurrentPointedObject = hit.transform.gameObject;
-                    Preview(hit.point);
-                }
-
-                if(UpdatePreviewTimer.IsRunning){
-                    UpdatePreviewTimer.Update(Time.deltaTime);
-                } 
-            }
-        }
-
-        /// <summary>
-        /// Preview the object at the specified position, rotation and scale
-        /// </summary>
-        /// <param name="pos"></param>
-        private void Preview(Vector3 pos) {
-            if(preview == null) {
-                Debug.LogWarning("preview is null");
-                return;
-            }
-
-            preview.Preview(pos, Quaternion.identity, Vector3.one);
-        }
-
         /// <summary>
         /// Enter build mode input callback
         /// </summary>
         public void RequestEnterBuildMode() {
-            if(_isBuilding) return;
 
             Debug.Log("[BuildManager] enter building mode");
             preview = new BuilderPreview(catalog[selectedBuildable], previewSettings);
+
+            // TODO(OPEN): Move to UI component ??
             UpdatePreviewTimer.Restart();
-            _isBuilding = true;
             OnEnterBuildMode?.Invoke();
         }
 
@@ -304,15 +256,15 @@ namespace Milhouzer.Core.BuildSystem
         /// Exit build mode input callback
         /// </summary>
         public void RequestExitBuildMode() {
-            if(!_isBuilding) return;
 
             Debug.Log("[BuildManager] exit building mode");
             if (preview != null) {
                 preview.Cleanup();
                 preview = null;
             }
+
+            // TODO(OPEN): Move to UI component
             UpdatePreviewTimer.Stop();
-            _isBuilding = false;
             OnExitBuildMode?.Invoke();
         }
 
@@ -336,9 +288,25 @@ namespace Milhouzer.Core.BuildSystem
         }
 
         /// <summary>
+        /// Preview the object at the specified position, rotation and scale
+        /// </summary>
+        /// <param name="pos"></param>
+        public void Preview(Vector3 pos) {
+            if(preview == null) {
+                Debug.LogWarning("preview is null");
+                return;
+            }
+
+            if(UpdatePreviewTimer.IsRunning){
+                UpdatePreviewTimer.Update(Time.deltaTime);
+            } 
+            preview.Preview(pos, Quaternion.identity, Vector3.one);
+        }
+
+        /// <summary>
         /// 
         /// </summary>
-        private void UpdatePreview() {
+        private void UpdatePreviewObject() {
             Debug.Log("[BuildManager] update preview for index " + selectedBuildable);
             preview.Cleanup();
             preview = new BuilderPreview(catalog[Mathf.Abs(selectedBuildable)], previewSettings);
@@ -375,19 +343,23 @@ namespace Milhouzer.Core.BuildSystem
         }
 
         /// <summary>
-        /// 
+        /// Update the desired object for the specified next one.
         /// </summary>
-        /// <param name="stateObject"></param>
-        /// <param name="cur"></param>
-        /// <param name="next"></param>//
-        public void RequestBuildUpdate(IStateObject stateObject, char cur, char next)
+        /// <param name="stateObject">Object to update</param>
+        /// <param name="next">The state the object should update to</param>
+        public void RequestBuildUpdate(IStateObject stateObject, string nextID)
         {
             int i = GetKeyByValue(stateObject);
             if(-1 == i) {
-                Debug.LogWarning($"Cannot update {stateObject} from {cur} to {next}, not registered on client side.");
+                Debug.LogWarning($"Cannot update {stateObject} from {stateObject.UID} to {nextID}, not registered on client side.");
             }
 
-            BuildUpdatePayload payload = new BuildUpdatePayload(i, cur, next);
+            char* cur = StatesManager.Instance.GetSymbol(States[i].UID);
+            char* next = StatesManager.Instance.GetSymbol(nextID);
+            if(cur == null || next == null){
+                Debug.LogWarning($"Cannot update {stateObject} from {States[i].UID} to {nextID}, one of the UID does not exist.");
+            }
+            BuildUpdatePayload payload = new BuildUpdatePayload(i, *cur, *next);
             UpdateBuildServerRpc(payload);
         }
 
@@ -419,7 +391,7 @@ namespace Milhouzer.Core.BuildSystem
             
             BuildableElement elem = catalog[payload.index];
 
-            // TODO: Inverse dependancy?
+            // TODO(OPEN): Inverse dependancy?
             bool res = StatesManager.Instance.CreateState(elem.UID, payload.transformPayload);
             if(res){
                 Debug.Log($"Visual {elem.UID} created at pos: {payload.transformPayload.position}, rot: {payload.transformPayload.rotation}, scale: {payload.transformPayload.scale}");

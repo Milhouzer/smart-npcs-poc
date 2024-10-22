@@ -15,11 +15,5 @@ namespace Milhouzer.Core.BuildSystem
         /// Preview settings.
         /// </summary>
         public PreviewSettings PreviewSettings;
-        /// <summary>
-        /// Camera used to raycast for preview placement.
-        /// </summary>
-        [HideInInspector]
-        public Camera Camera;
-
     }
 }

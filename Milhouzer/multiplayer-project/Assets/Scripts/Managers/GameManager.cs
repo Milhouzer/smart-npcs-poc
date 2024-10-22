@@ -9,9 +9,16 @@ using Milhouzer.Input;
 using Milhouzer.Core.BuildSystem;
 using Milhouzer.Core.Player;
 using Milhouzer.Core.BuildSystem.ContextActions;
+using Milhouzer.UI;
+using Unity.VisualScripting;
 
 namespace Milhouzer.Core
 {
+    public enum GameState {
+        Idle,
+        Build
+    }
+
     public class GameManager : NetworkedSingleton<GameManager>
     {
         [Header("Controller")]
@@ -30,9 +37,22 @@ namespace Milhouzer.Core
         public event Action<PlayerData> OnPlayerDisconnectedCallback;
 
         /// <summary>
+        /// Current game state. Action should be executed when the player is in the appropriate mode. (ex: building objects only in Build) 
+        /// </summary>
+        /// <value></value>
+        public GameState GameState { get; private set; }
+
+        /// <summary>
         /// Main camera component, different on each client.
         /// </summary>
         Camera playerCamera;
+        
+        /// <summary>
+        /// Current pointed object by the camera (should ignore UI)
+        /// </summary>
+        public static GameObject CurrentPointedObject;
+
+        #region UNITY EVENTS
         
         void Awake() {
             networkPlayersData = new NetworkList<PlayerData>(new List<PlayerData>(), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
@@ -59,6 +79,32 @@ namespace Milhouzer.Core
             }
         }
 
+        private void Update() {
+            if(IsClient) HandleClientTick();
+        }
+
+        #endregion
+
+        /// <summary>
+        /// If in building mode, preview object at the pointed position.
+        /// </summary>
+        private void HandleClientTick()
+        {
+            if(IsServer) return;
+
+            if(this.GameState == GameState.Build && playerCamera != null) 
+            {
+                RaycastHit hit;
+                if (Physics.Raycast(playerCamera.ScreenPointToRay(UnityEngine.Input.mousePosition), out hit, 150f, ~(1 << 10)))
+                {
+                    CurrentPointedObject = hit.transform.gameObject;
+                    BuildManager.Instance.Preview(hit.point);
+                }
+            }
+        }
+
+        #region INIT MANAGERS
+
         /// <summary>
         /// Init server <see cref="BuildManager"/>, only the catalog is necessary for the server to instantiate objects.
         /// </summary>
@@ -77,26 +123,73 @@ namespace Milhouzer.Core
         /// <param name="settings"></param>
         void InitClientBuildManager(BuildManagerSettings settings) {
             settings = Instantiate(settings);
-            settings.Camera = playerCamera;
             BuildManager.Instance.Init(settings);
-            input.OnEnterBuildModeEvent += BuildManager.Instance.RequestEnterBuildMode;
-            input.OnExitBuildModeEvent += BuildManager.Instance.RequestExitBuildMode;
-            input.OnBuildEvent += BuildManager.Instance.RequestBuild;
-            input.OnUpdateBuild += UpdateTargetedBuild;
-            input.OnRotateEvent += BuildManager.Instance.RequestPreviewRotation;
-            input.OnScaleEvent += BuildManager.Instance.RequestPreviewScale;
-            input.OnResetEvent += BuildManager.Instance.RequestReset;
-            input.OnSelectEvent += BuildManager.Instance.RequestSelect;
+
+            // Register callbacks
+            input.OnEnterBuildModeEvent += OnEnterBuildModeInputHandler;
+            input.OnExitBuildModeInput += OnExitBuildModeInputHandler;
+            input.OnBuildInput += OnBuildInputHandler;
+            // TODO(FIX): Delete
+            // input.OnUpdateBuildInput += UpdateTargetedBuild;
+            input.OnRotateBuildInput += BuildManager.Instance.RequestPreviewRotation;
+            input.OnScaleBuildInput += BuildManager.Instance.RequestPreviewScale;
+            input.OnResetBuildInput += BuildManager.Instance.RequestReset;
+            input.OnSelectBuildInput += BuildManager.Instance.RequestSelect;
+            input.OnUseContextActionInput += OnUseContextActionInputHandler;
         }
 
-        private void UpdateTargetedBuild()
+        private void InitClientUIManager()
         {
-            if(!BuildManager.CurrentPointedObject.TryGetComponent(out IStateObject stateObject)) return;
-            // if(!BuildManager.CurrentPointedObject.TryGetComponent(out IContextActionHandler actionHandler)) return;
+            // ????
+        }
 
-            // IContextAction<IContextActionHandler> action = PlayerStorage.GetContextAction();
-            // action.Execute(actionHandler);
-            BuildManager.Instance.RequestBuildUpdate(stateObject, stateObject.Identifier,  '1');
+        #endregion
+        
+        #region INPUT HANDLERS
+
+        private void OnEnterBuildModeInputHandler()
+        {
+            if(this.GameState != GameState.Build) return;
+
+            this.GameState = GameState.Build;
+            BuildManager.Instance.RequestEnterBuildMode();
+        }
+        
+        private void OnExitBuildModeInputHandler()
+        {
+            if(this.GameState == GameState.Build) return;
+
+            this.GameState = GameState.Idle;
+            BuildManager.Instance.RequestExitBuildMode();
+        }
+
+        private void OnUseContextActionInputHandler(ref bool Cancel)
+        {
+            Cancel = UIManager.Instance.ExecuteContextAction();
+            Debug.Log($"[GameManager] UseContextAction event has been processed, canceled: {Cancel}");
+        }
+
+        private void OnBuildInputHandler(ref bool Cancel)
+        {
+            if(this.GameState != GameState.Build) return;
+
+            BuildManager.Instance.RequestBuild();
+            Cancel = true;
+            Debug.Log($"[GameManager] RequestBuild event has been processed, canceled: {Cancel}");
+        }
+
+        #endregion
+
+        #region NETWORK CALLBACKS
+
+        private IEnumerator CheckPlayerData()
+        {
+            yield return new WaitForSeconds(3f);
+            Debug.Log(networkPlayersData.Count);
+            foreach (PlayerData data in networkPlayersData)
+            {
+                OnPlayerConnectedCallback?.Invoke(data);
+            }
         }
 
         /// <summary>
@@ -108,6 +201,7 @@ namespace Milhouzer.Core
             Debug.Log($"[GameManager] player object created callback on server {controller.CamController.Camera}");
             playerCamera = controller.CamController.Camera;
             InitClientBuildManager(BuildManagerSettings);
+            InitClientUIManager();
         }
 
         void OnServerListChanged(NetworkListEvent<PlayerData> changeEvent)
@@ -128,16 +222,6 @@ namespace Milhouzer.Core
                 Debug.Log($"\r\n{data.Username}: {data.Color}");
             }
             HandlePlayerDataChanged(changeEvent);
-        }
-
-        private IEnumerator CheckPlayerData()
-        {
-            yield return new WaitForSeconds(3f);
-            Debug.Log(networkPlayersData.Count);
-            foreach (PlayerData data in networkPlayersData)
-            {
-                OnPlayerConnectedCallback?.Invoke(data);
-            }
         }
 
         // Q: How do clients receive event, is it because OnPlayerConnectedCallback is static ?
@@ -194,6 +278,10 @@ namespace Milhouzer.Core
 
         }
 
+        #endregion
+        
+        #region UTILITY FUNCTIONS
+
         private static readonly System.Random random = new System.Random();
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         const int length = 8;
@@ -233,6 +321,7 @@ namespace Milhouzer.Core
             }
         }
 
+        // TODO(MISC): WTF DOES THIS DO ???
         [ServerRpc(RequireOwnership = false)]
         public void SelectServerRpc(NetworkObjectReference selectableRef, ulong requestingClientId)
         {
@@ -267,5 +356,7 @@ namespace Milhouzer.Core
             data = default;
             return false;
         }
+
+        #endregion
     }
 }

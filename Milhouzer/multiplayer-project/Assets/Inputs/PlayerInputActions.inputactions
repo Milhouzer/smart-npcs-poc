@@ -98,33 +98,6 @@
             "id": "18aa8c0a-820c-4a9d-bef4-2dd5b1c29019",
             "actions": [
                 {
-                    "name": "Build",
-                    "type": "Button",
-                    "id": "e98a2018-e299-424f-abdd-3b2ba7e0ed35",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "Scroll",
-                    "type": "Value",
-                    "id": "f268a222-34d7-4566-8af0-5c5273ce9cba",
-                    "expectedControlType": "Axis",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": true
-                },
-                {
-                    "name": "Reset",
-                    "type": "Button",
-                    "id": "32faee2b-fb14-4b61-b697-ca0f441cde77",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "ExitBuildMode",
                     "type": "Button",
                     "id": "f3e47b9a-6cf6-4e53-9bf1-89b32b5fa625",
@@ -137,45 +110,12 @@
             "bindings": [
                 {
                     "name": "",
-                    "id": "660e7903-3993-4fe6-9c2d-fa8095339acf",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "Press",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Build",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "c4b1ccb0-5171-482f-8b4e-76267972f7e6",
-                    "path": "<Mouse>/rightButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Reset",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "a46d7310-8212-487f-b128-36ea25745f76",
                     "path": "<Keyboard>/b",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "ExitBuildMode",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "09dd2503-52dc-465d-81d7-226ecce1d6eb",
-                    "path": "<Mouse>/scroll",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Scroll",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
@@ -189,6 +129,15 @@
                     "name": "Shift",
                     "type": "Button",
                     "id": "1d37834d-0168-4011-9666-c4bea83f64be",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Control",
+                    "type": "Button",
+                    "id": "17da45f5-ca35-41b3-a6e9-11693714bab2",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -224,6 +173,85 @@
                     "processors": "",
                     "groups": "",
                     "action": "Alt",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "df8084c1-080c-477d-8c94-cab1fbfe6fe2",
+                    "path": "<Keyboard>/ctrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Control",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "Generics",
+            "id": "3423f8ff-5860-4ec0-b8c1-8e3d09ee5c86",
+            "actions": [
+                {
+                    "name": "Select",
+                    "type": "Button",
+                    "id": "e5a1ca2b-9a03-4807-8fcd-cf926a262825",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Cancel",
+                    "type": "Button",
+                    "id": "a90a9a2e-8249-4b9e-a8b5-08fc9f7a8974",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Scroll",
+                    "type": "Value",
+                    "id": "c63413fc-9680-4b70-a8b3-f01f7acf6c3b",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "29e9eef7-296e-4ea8-9924-8a33a9d27993",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "Press",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Select",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "09d46fbd-f1af-4384-a5fb-f7db8c86eec1",
+                    "path": "<Mouse>/scroll",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Scroll",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d09b4004-4940-4db6-8788-c866e7f3c4ed",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Cancel",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
