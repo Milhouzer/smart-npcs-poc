@@ -20,10 +20,10 @@ MonoBehaviour:
       UID: FARMLAND.TOMATO
       Child:
       - Symbol: 99
-        UID: FARMLAND.TOMATO.MEDIUM
+        UID: FARMLAND.TOMATO.1
         Child:
         - Symbol: 100
-          UID: FARMLAND.TOMATO.BIG
+          UID: FARMLAND.TOMATO.2
           Child: []
     - Symbol: 101
       UID: FARMLAND.BEANS

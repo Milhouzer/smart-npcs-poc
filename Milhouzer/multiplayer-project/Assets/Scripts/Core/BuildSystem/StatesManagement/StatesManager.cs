@@ -78,15 +78,15 @@ namespace Milhouzer.Core.BuildSystem.StatesManagement
             return node.UID;
         }
 
-        internal char* GetSymbol(string UID)
+        internal char GetSymbol(string UID)
         {
             Node node = Namespace.GetNode(UID);
             if(node.Equals(default(Node))){
                 Debug.LogWarning($"Node {UID} is null");
-                return null;
+                return char.MaxValue;
             }
 
-            return &node.Symbol;
+            return node.Symbol;
         }
 
         #endregion
@@ -139,7 +139,7 @@ namespace Milhouzer.Core.BuildSystem.StatesManagement
             }
 
             if(currentNode.Symbol != cur) {
-                Debug.LogWarning($"Node {InternalServerStates[i]} cannot be updated, cur and symbol are different: {currentNode.Symbol}, {cur}");
+                Debug.LogWarning($"Node {InternalServerStates[i]} cannot be updated, cur and symbol are different: {InternalServerStates[i]}/{currentNode.Symbol}, {cur}");
                 return false;
             }
 

@@ -8,7 +8,13 @@ namespace Milhouzer.UI
 {
     public class UIManager : Singleton<UIManager>
     {
-        public ContextAction HeldAction;
+        private ContextAction heldAction; 
+        public ContextAction HeldAction {
+            get { return heldAction; }
+            set {
+                heldAction = value;
+            }
+        }
 
         /// <summary>
         /// Camera used to raycast from mouse when executing action.
@@ -35,13 +41,27 @@ namespace Milhouzer.UI
             RaycastHit hit;
             if (Physics.Raycast(cam.ScreenPointToRay(UnityEngine.Input.mousePosition), out hit, 150f, ~(1 << 10)))
             {
-                HeldAction.Execute(hit.transform.gameObject.GetComponent<IContextActionHandler>());
+                if(!hit.transform.gameObject.TryGetComponent<IContextActionHandler>(out var handler)) {
+                    Debug.Log("[UIManager] No handler detected to execute context action");
+                    HeldAction = null;
+                    return true;
+                }
+                HeldAction.Execute(handler);
                 HeldAction = null;
                 return true;
             }
 
             HeldAction = null;
             return false;
+        }
+
+        internal void Init(UIManagerSettings settings)
+        {
+            cam = settings.Camera;
+            if(cam == null)
+            {
+                cam = Camera.main;
+            }
         }
     }
 }
