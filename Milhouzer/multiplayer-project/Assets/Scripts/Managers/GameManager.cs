@@ -26,8 +26,12 @@ namespace Milhouzer.Core
         InputReader input;
         public InputReader Input => input;
 
+        [Header("Manager settings")]
         [SerializeField]
         BuildManagerSettings BuildManagerSettings;
+
+        [SerializeField]
+        UIManagerSettings UIManagerSettings;
 
         [SerializeField] List<Color> playerColors;
 
@@ -138,9 +142,11 @@ namespace Milhouzer.Core
             input.OnUseContextActionInput += OnUseContextActionInputHandler;
         }
 
-        private void InitClientUIManager()
+        private void InitClientUIManager(UIManagerSettings settings)
         {
-            // ????
+            settings = Instantiate(settings);
+            settings.Camera = playerCamera;
+            UIManager.Instance.Init(settings);
         }
 
         #endregion
@@ -149,7 +155,7 @@ namespace Milhouzer.Core
 
         private void OnEnterBuildModeInputHandler()
         {
-            if(this.GameState != GameState.Build) return;
+            if(this.GameState == GameState.Build) return;
 
             this.GameState = GameState.Build;
             BuildManager.Instance.RequestEnterBuildMode();
@@ -157,7 +163,7 @@ namespace Milhouzer.Core
         
         private void OnExitBuildModeInputHandler()
         {
-            if(this.GameState == GameState.Build) return;
+            if(this.GameState != GameState.Build) return;
 
             this.GameState = GameState.Idle;
             BuildManager.Instance.RequestExitBuildMode();
@@ -201,7 +207,7 @@ namespace Milhouzer.Core
             Debug.Log($"[GameManager] player object created callback on server {controller.CamController.Camera}");
             playerCamera = controller.CamController.Camera;
             InitClientBuildManager(BuildManagerSettings);
-            InitClientUIManager();
+            InitClientUIManager(UIManagerSettings);
         }
 
         void OnServerListChanged(NetworkListEvent<PlayerData> changeEvent)

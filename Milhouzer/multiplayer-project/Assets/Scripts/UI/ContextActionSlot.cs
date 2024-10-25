@@ -17,6 +17,7 @@ namespace Milhouzer.UI
             }
 
             UIManager.Instance.HeldAction = action;
+            Debug.Log($"[ContextActionSlot] Set context action {action}: {UIManager.Instance.HeldAction}");
         }
     }
 }

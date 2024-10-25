@@ -352,14 +352,17 @@ namespace Milhouzer.Core.BuildSystem
             int i = GetKeyByValue(stateObject);
             if(-1 == i) {
                 Debug.LogWarning($"Cannot update {stateObject} from {stateObject.UID} to {nextID}, not registered on client side.");
+                return;
             }
 
-            char* cur = StatesManager.Instance.GetSymbol(States[i].UID);
-            char* next = StatesManager.Instance.GetSymbol(nextID);
-            if(cur == null || next == null){
+            char cur = StatesManager.Instance.GetSymbol(States[i].UID);
+            char next = StatesManager.Instance.GetSymbol(nextID);
+            if(cur == char.MaxValue || next == char.MaxValue){
                 Debug.LogWarning($"Cannot update {stateObject} from {States[i].UID} to {nextID}, one of the UID does not exist.");
+                return;
             }
-            BuildUpdatePayload payload = new BuildUpdatePayload(i, *cur, *next);
+            Debug.Log($"[BuildManager] Request {stateObject} update for {nextID}: cur={cur} and next={next}");
+            BuildUpdatePayload payload = new BuildUpdatePayload(i, cur, next);
             UpdateBuildServerRpc(payload);
         }
 
