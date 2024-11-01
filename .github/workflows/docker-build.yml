@@ -24,7 +24,7 @@ jobs:
       # Build the Docker image
       - name: Build Docker image
         run: |
-          docker build -t ghcr.io/${{ github.repository }}/smart-npc-poc:latest .
+          docker build -t 'ghcr.io/${{ github.repository }}/smart-npc-poc:latest' .
 
       # Log in to GitHub Container Registry
       - name: Log in to GitHub Container Registry
