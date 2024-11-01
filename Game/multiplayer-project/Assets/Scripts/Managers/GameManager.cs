@@ -1,16 +1,13 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using Milhouzer.Utils;
 using Unity.Netcode;
 using UnityEngine;
 using Milhouzer.Input;
 using Milhouzer.Core.BuildSystem;
 using Milhouzer.Core.Player;
-using Milhouzer.Core.BuildSystem.ContextActions;
 using Milhouzer.UI;
-using Unity.VisualScripting;
+using Utils;
 
 namespace Milhouzer.Core
 {
@@ -19,37 +16,32 @@ namespace Milhouzer.Core
         Build
     }
 
-    public class GameManager : NetworkedSingleton<GameManager>
+    public class GameManager : NetworkedSingleton<GameManager>, IManager<GameManagerSettings>
     {
         [Header("Controller")]
         [SerializeField]
         InputReader input;
         public InputReader Input => input;
 
-        [Header("Manager settings")]
         [SerializeField]
-        BuildManagerSettings BuildManagerSettings;
+        GameManagerSettings Settings;
 
-        [SerializeField]
-        UIManagerSettings UIManagerSettings;
+        [SerializeField] 
+        
+        private List<Color> playerColors;
 
-        [SerializeField] List<Color> playerColors;
-
-        private NetworkList<PlayerData> networkPlayersData;
-
-        public event Action<PlayerData> OnPlayerConnectedCallback;
-        public event Action<PlayerData> OnPlayerDisconnectedCallback;
+        private NetworkList<PlayerData> _networkPlayersData;
 
         /// <summary>
         /// Current game state. Action should be executed when the player is in the appropriate mode. (ex: building objects only in Build) 
         /// </summary>
         /// <value></value>
-        public GameState GameState { get; private set; }
+        private GameState GameState { get; set; }
 
         /// <summary>
         /// Main camera component, different on each client.
         /// </summary>
-        Camera playerCamera;
+        private Camera _playerCamera;
         
         /// <summary>
         /// Current pointed object by the camera (should ignore UI)
@@ -58,37 +50,26 @@ namespace Milhouzer.Core
 
         #region UNITY EVENTS
         
-        void Awake() {
-            networkPlayersData = new NetworkList<PlayerData>(new List<PlayerData>(), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        private void Awake() {
+            _networkPlayersData = new NetworkList<PlayerData>(new List<PlayerData>(), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+            PlayerController.OnPlayerReady += OnPlayerReadyEventHandler;
         }
 
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
 
+            // InitClientManager is called when the player is ready
             if(IsServer) 
             {
-                Debug.Log("[GameManager] Init as server");
-                Shuffle<Color>(ref playerColors);   
-                NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnectedCallback;
-                NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnectCallback;
-                networkPlayersData.OnListChanged += OnServerListChanged;
-                InitServerBuildManager(BuildManagerSettings);
-            }
-            else {
-                Debug.Log("[GameManager] Init as client");
-                networkPlayersData.OnListChanged += OnClientListChanged;
-                PlayerController.OnPlayerCreatedCallback += OnPlayerCreatedCallback_Client;
-                StartCoroutine(CheckPlayerData());
+                InitServerManager(Settings);
             }
         }
 
         private void Update() {
             if(IsClient) HandleClientTick();
         }
-
-        #endregion
-
+        
         /// <summary>
         /// If in building mode, preview object at the pointed position.
         /// </summary>
@@ -96,45 +77,65 @@ namespace Milhouzer.Core
         {
             if(IsServer) return;
 
-            if(this.GameState == GameState.Build && playerCamera != null) 
-            {
-                RaycastHit hit;
-                if (Physics.Raycast(playerCamera.ScreenPointToRay(UnityEngine.Input.mousePosition), out hit, 150f, ~(1 << 10)))
-                {
-                    CurrentPointedObject = hit.transform.gameObject;
-                    BuildManager.Instance.Preview(hit.point);
-                }
-            }
+            if (this.GameState != GameState.Build || !_playerCamera) return;
+            if (!Physics.Raycast(_playerCamera.ScreenPointToRay(UnityEngine.Input.mousePosition), out RaycastHit hit,
+                    150f, ~(1 << 10))) return;
+            CurrentPointedObject = hit.transform.gameObject;
+            BuildManager.Instance.Preview(hit.point);
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Player connected callback, init <see cref="BuildManager"/> with data injection
+        /// </summary>
+        /// <param name="controller"></param>
+        private void OnPlayerReadyEventHandler(PlayerController controller)
+        {
+            if (!IsClient) return;
+            
+            Debug.Log($"[GameManager] player object created callback on server {controller.CamController.Camera}");
+            _playerCamera = controller.CamController.Camera;
+            InitClientManager(Settings);
         }
 
         #region INIT MANAGERS
+        
+        public void InitClientManager(GameManagerSettings managerSettings)
+        {
+            Debug.Log("[GameManager] Init as client");
+            InitClientUIManager(Settings.UIManagerSettings);
+            InitClientBuildManager(Settings.BuildManagerSettings);
+        }
 
+        public void InitServerManager(GameManagerSettings managerSettings)
+        {
+            Debug.Log("[GameManager] Init as server");
+            InitServerBuildManager(Settings.BuildManagerSettings);
+        }
+        
         /// <summary>
         /// Init server <see cref="BuildManager"/>, only the catalog is necessary for the server to instantiate objects.
         /// </summary>
         /// <param name="settings"></param>
-        void InitServerBuildManager(BuildManagerSettings settings) {
+        private void InitServerBuildManager(BuildManagerSettings settings) {
             settings = Instantiate(settings);
-            BuildManager.Instance.Init(settings);
+            BuildManager.Instance.InitServerManager(settings);
         }
 
         /// <summary>
-        /// Init client <see cref="BuildManager"/>, we pass the player camera and the input used to register callbacks to them
+        /// Init client <see cref="BuildManager"/>, register callbacks to control the build system
+        /// <see cref="BuildManager.InitClientManager"/>
         /// </summary>
-        /// <remarks>
-        /// Should input be registered in GameManager ?
-        /// </remarks>
         /// <param name="settings"></param>
-        void InitClientBuildManager(BuildManagerSettings settings) {
+        private void InitClientBuildManager(BuildManagerSettings settings) {
             settings = Instantiate(settings);
-            BuildManager.Instance.Init(settings);
+            BuildManager.Instance.InitClientManager(settings);
 
             // Register callbacks
             input.OnEnterBuildModeEvent += OnEnterBuildModeInputHandler;
             input.OnExitBuildModeInput += OnExitBuildModeInputHandler;
             input.OnBuildInput += OnBuildInputHandler;
-            // TODO(FIX): Delete
-            // input.OnUpdateBuildInput += UpdateTargetedBuild;
             input.OnRotateBuildInput += BuildManager.Instance.RequestPreviewRotation;
             input.OnScaleBuildInput += BuildManager.Instance.RequestPreviewScale;
             input.OnResetBuildInput += BuildManager.Instance.RequestReset;
@@ -142,11 +143,15 @@ namespace Milhouzer.Core
             input.OnUseContextActionInput += OnUseContextActionInputHandler;
         }
 
+        /// <summary>
+        /// Initialize client <see cref="UIManager"/>, see: <see cref="UIManager.InitClientManager"/>
+        /// </summary>
+        /// <param name="settings"></param>
         private void InitClientUIManager(UIManagerSettings settings)
         {
             settings = Instantiate(settings);
-            settings.Camera = playerCamera;
-            UIManager.Instance.Init(settings);
+            settings.Camera = _playerCamera;
+            UIManager.Instance.InitClientManager(settings);
         }
 
         #endregion
@@ -182,185 +187,6 @@ namespace Milhouzer.Core
             BuildManager.Instance.RequestBuild();
             Cancel = true;
             Debug.Log($"[GameManager] RequestBuild event has been processed, canceled: {Cancel}");
-        }
-
-        #endregion
-
-        #region NETWORK CALLBACKS
-
-        private IEnumerator CheckPlayerData()
-        {
-            yield return new WaitForSeconds(3f);
-            Debug.Log(networkPlayersData.Count);
-            foreach (PlayerData data in networkPlayersData)
-            {
-                OnPlayerConnectedCallback?.Invoke(data);
-            }
-        }
-
-        /// <summary>
-        /// Player connected callback, init <see cref="BuildManager"/> with data injection
-        /// </summary>
-        /// <param name="controller"></param>
-        private void OnPlayerCreatedCallback_Client(PlayerController controller)
-        {
-            Debug.Log($"[GameManager] player object created callback on server {controller.CamController.Camera}");
-            playerCamera = controller.CamController.Camera;
-            InitClientBuildManager(BuildManagerSettings);
-            InitClientUIManager(UIManagerSettings);
-        }
-
-        void OnServerListChanged(NetworkListEvent<PlayerData> changeEvent)
-        {
-            Debug.Log($"[GameManager_Server] The list changed and now has {networkPlayersData.Count} elements on server:");
-            foreach(PlayerData data in networkPlayersData) {
-                Debug.Log($"\r\n{data.Username}: {data.Color}");
-            }
-            HandlePlayerDataChanged(changeEvent);
-        }
-
-        void OnClientListChanged(NetworkListEvent<PlayerData> changeEvent)
-        {
-            if (NetworkManager.Singleton.LocalClientId == changeEvent.Value.Id) return;
-
-            Debug.Log($"[GameManager_Client] The list changed and now has {networkPlayersData.Count} elements {this.OwnerClientId}, {changeEvent.Value.Id}");
-            foreach(PlayerData data in networkPlayersData) {
-                Debug.Log($"\r\n{data.Username}: {data.Color}");
-            }
-            HandlePlayerDataChanged(changeEvent);
-        }
-
-        // Q: How do clients receive event, is it because OnPlayerConnectedCallback is static ?
-        private void HandlePlayerDataChanged(NetworkListEvent<PlayerData> changeEvent)
-        {
-            PlayerData changed = changeEvent.Value;
-            Debug.Log($"Handle event change {changeEvent.Type}: {changed.Username}");
-            switch(changeEvent.Type) {
-                case NetworkListEvent<PlayerData>.EventType.Add:
-                    OnPlayerConnectedCallback?.Invoke(changed);
-                    return;
-                case NetworkListEvent<PlayerData>.EventType.Insert:
-                    OnPlayerConnectedCallback?.Invoke(changed);
-                    return;
-            }
-            
-            OnPlayerDisconnectedCallback?.Invoke(changed);
-        }
-
-        private void OnClientConnectedCallback(ulong clientId)
-        {
-            if(!IsServer) 
-            {
-                Debug.LogWarning("Tried to call server method from client!");
-                return;
-            }
-
-            string username = GetUsername();
-            Color color = playerColors[networkPlayersData.Count];
-            PlayerData newPlayerData = new PlayerData(clientId, username, color);
-
-            networkPlayersData.Add(newPlayerData);
-
-            Debug.Log($"Player {username} connected with color {color}");
-        }
-
-        private void OnClientDisconnectCallback(ulong clientId)
-        {
-            if(!IsServer) 
-            {
-                Debug.LogWarning("Tried to call server method from client!");
-                return;
-            }
-            
-            for (int i = networkPlayersData.Count - 1; i >= 0 ; i--)
-            {
-                if(networkPlayersData[i].Id == clientId) {
-                    networkPlayersData.RemoveAt(i);
-                    return;
-                }
-            }
-
-            Debug.Log($"Player {clientId} disconnected");
-
-        }
-
-        #endregion
-        
-        #region UTILITY FUNCTIONS
-
-        private static readonly System.Random random = new System.Random();
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        const int length = 8;
-
-        /// <summary>
-        /// Random username generator
-        /// </summary>
-        /// <returns></returns>
-        public static string GetUsername()
-        {
-            StringBuilder result = new StringBuilder(length);
-
-            for (int i = 0; i < length; i++)
-            {
-                result.Append(chars[random.Next(chars.Length)]);
-            }
-
-            return result.ToString();
-        }
-
-        /// <summary>
-        /// Utility method to shuffle an array using Fisher-Yates algorithm
-        /// </summary>
-        /// <param name="list"></param>
-        /// <typeparam name="T"></typeparam>
-        public static void Shuffle<T>(ref List<T> list)
-        {
-            System.Random rng = new System.Random();
-            int n = list.Count;
-            while (n > 1)
-            {
-                n--;
-                int k = rng.Next(n + 1);
-                T value = list[k];
-                list[k] = list[n];
-                list[n] = value;
-            }
-        }
-
-        // TODO(MISC): WTF DOES THIS DO ???
-        [ServerRpc(RequireOwnership = false)]
-        public void SelectServerRpc(NetworkObjectReference selectableRef, ulong requestingClientId)
-        {
-            Debug.Log($"{requestingClientId} tried to select {selectableRef.NetworkObjectId}");
-            if (selectableRef.TryGet(out NetworkObject selectableObject))
-            {
-                ISelectable selectable = selectableObject.GetComponent<ISelectable>();
-                if (selectable != null && !selectable.IsSelected())
-                {
-                    selectable.Select(requestingClientId);
-                    // NotifyClientsSelectionClientRpc(selectableRef, requestingClientId);
-                }else {
-                    Debug.Log($"selectable {selectable} is selected: {selectable.IsSelected()}");
-                }
-            }else {
-                Debug.Log($"could not get NetworkObject out of {selectableRef.NetworkObjectId}");
-            }
-        }
-
-        /// <summary>
-        /// Try get player data based on a given client Id.
-        /// </summary>
-        /// <param name="clientId"></param>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        public bool TryGetPlayerData(ulong clientId, out PlayerData data) {
-            foreach(PlayerData playerData in networkPlayersData) {
-                data = playerData;
-                return true;
-            }
-
-            data = default;
-            return false;
         }
 
         #endregion

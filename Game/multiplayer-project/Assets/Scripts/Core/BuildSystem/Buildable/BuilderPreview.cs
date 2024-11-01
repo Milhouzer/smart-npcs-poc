@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace Milhouzer.Core.BuildSystem
@@ -11,57 +10,57 @@ namespace Milhouzer.Core.BuildSystem
         /// <summary>
         /// Element to preview
         /// </summary>
-        readonly BuildableElement buildable;
+        private readonly BuildableElement _buildable;
 
         /// <summary>
         /// Current previewed object
         /// </summary>
-        GameObject currentPreview;
+        private GameObject _currentPreview;
 
         /// <summary>
         /// Material to use
         /// </summary>
-        Material material;
+        private readonly Material _material;
 
         /// <summary>
         /// Collision layer of the object preview
         /// </summary>
-        int layer;
+        private readonly int _layer;
 
         // Accessors
-        public Vector3 Position => currentPreview == null ? Vector3.zero : currentPreview.transform.position;
-        public Quaternion Rotation => currentPreview == null ? Quaternion.identity : currentPreview.transform.rotation;
-        public Vector3 LocalScale => currentPreview == null ? Vector3.zero : currentPreview.transform.localScale;
+        public Vector3 Position => _currentPreview == null ? Vector3.zero : _currentPreview.transform.position;
+        public Quaternion Rotation => _currentPreview == null ? Quaternion.identity : _currentPreview.transform.rotation;
+        public Vector3 LocalScale => _currentPreview == null ? Vector3.zero : _currentPreview.transform.localScale;
         
         /// <summary>
         /// Default constructors, sets material, layer and buildable element. 
         /// </summary>
-        /// <param name="_buildable"></param>
+        /// <param name="buildable"></param>
         /// <param name="settings"></param>
-        public BuilderPreview(BuildableElement _buildable, PreviewSettings settings) {
-            buildable = _buildable;
-            material = settings.Material;
-            layer = settings.Layer;
+        public BuilderPreview(BuildableElement buildable, PreviewSettings settings) {
+            this._buildable = buildable;
+            _material = settings.Material;
+            _layer = settings.Layer;
         }
 
         /// <summary>
-        /// If no <see cref="currentPreview"/> exists, create one at the specified parameters, sets the transform parameters values otherwise
+        /// If no <see cref="_currentPreview"/> exists, create one at the specified parameters, sets the transform parameters values otherwise
         /// </summary>
         /// <param name="pos"></param>
         /// <param name="rot"></param>
         /// <param name="scale"></param>
         public void Preview(Vector3 pos, Quaternion rot, Vector3 scale) {
-            if(currentPreview == null) {
-                currentPreview = buildable.Object.Preview(pos, rot, scale);
-                currentPreview.transform.localScale = scale;
-                currentPreview.layer = layer;
-                Renderer renderer = currentPreview.GetComponentInChildren<Renderer>();
-                if(renderer) renderer.materials[0] = material;
-                currentPreview.SetActive(true);
+            if(!_currentPreview) {
+                _currentPreview = _buildable.Object.Preview(pos, rot, scale);
+                _currentPreview.transform.localScale = scale;
+                _currentPreview.layer = _layer;
+                Renderer renderer = _currentPreview.GetComponentInChildren<Renderer>();
+                if(renderer) renderer.materials[0] = _material;
+                _currentPreview.SetActive(true);
                 return;
             }
 
-            currentPreview.transform.position = pos;
+            _currentPreview.transform.position = pos;
         }
 
         /// <summary>
@@ -69,7 +68,7 @@ namespace Milhouzer.Core.BuildSystem
         /// </summary>
         /// <param name="amount"></param>
         public void Rotate(float amount) {
-            currentPreview.transform.rotation = buildable.Constraints.Rotate(currentPreview.transform.rotation, amount);
+            _currentPreview.transform.rotation = _buildable.Constraints.Rotate(_currentPreview.transform.rotation, amount);
         }
         
         /// <summary>
@@ -77,21 +76,21 @@ namespace Milhouzer.Core.BuildSystem
         /// </summary>
         /// <param name="amount"></param>
         public void Scale(float amount) {
-            currentPreview.transform.localScale = buildable.Constraints.Scale(currentPreview.transform.localScale, amount);
+            _currentPreview.transform.localScale = _buildable.Constraints.Scale(_currentPreview.transform.localScale, amount);
         }
 
         public void Reset() {
-            currentPreview.transform.rotation = Quaternion.identity;
-            currentPreview.transform.localScale = Vector3.one;
+            _currentPreview.transform.rotation = Quaternion.identity;
+            _currentPreview.transform.localScale = Vector3.one;
         }
 
         /// <summary>
         /// Clean up the preview
         /// </summary>
         public void Cleanup() {
-            if(currentPreview == null) return;
+            if(!_currentPreview) return;
 
-            GameObject.Destroy(currentPreview);
+            Object.Destroy(_currentPreview);
         }
     }
 }

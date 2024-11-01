@@ -10,8 +10,8 @@ namespace Milhouzer.Core.BuildSystem
     public class BuildableElement : ScriptableObject {
         /// <summary>
         /// Buildable element identifier
-        /// This Id will be used to identify the element when built. Ids should be unique, by convention they follow the syntax :
-        /// *.*.* and so on.. (i.e FARMLAND.TOMATO.SEED, FARMLAND.TOMATO.SMALL, FARMLAND.TOMATO.LARGE)
+        /// This ID will be used to identify the element when built. Ids should be unique, by convention they follow the syntax :
+        /// *.*.* and so on... (i.e. FARMLAND.TOMATO.SEED, FARMLAND.TOMATO.SMALL, FARMLAND.TOMATO.LARGE)
         /// </summary>
         public string UID;
         
