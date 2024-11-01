@@ -26,7 +26,7 @@ jobs:
         run: |
           IMAGE_NAME=ghcr.io/${{ github.repository }}  # Get the repository name
           IMAGE_NAME_LOWER=$(echo "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')  # Convert to lowercase
-          docker build -t "${IMAGE_NAME_LOWER}/smart-npc-poc:latest" .
+          docker buildx build -t "${IMAGE_NAME_LOWER}/smart-npc-poc:latest" .
 
       # Log in to GitHub Container Registry
       - name: Log in to GitHub Container Registry
