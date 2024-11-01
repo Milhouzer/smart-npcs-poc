@@ -14,7 +14,7 @@ ENV PATH="/root/.local/bin:$PATH"
 COPY API/pyproject.toml API/poetry.lock ./
 
 # Install dependencies using Poetry
-# RUN poetry install --no-root --no-interaction --no-ansi
+RUN poetry install --no-root --no-interaction --no-ansi --no-dev
 
 # Copy the application code into the container
 COPY API/ .
