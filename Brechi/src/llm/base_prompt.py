@@ -1,5 +1,5 @@
 from langchain import PromptTemplate
-from .response import get_parser_output
+from .base import get_parser_output
 
 # robot_def : explain
 
