@@ -1,10 +1,14 @@
-name: Build Docker Image
+name: Build and Push Docker Image
 
 on:
   push:
     branches:
-      - brechi/develop  # Trigger the workflow on push to the main branch
+      - brechi/develop  # Trigger the workflow on push to the specified branch
 
+    pull_request:
+      branches:
+        - brechi/develop  # Trigger the workflow on pull requests targeting the develop branch
+    
   # Optionally, you can enable manual trigger
   workflow_dispatch:
 
@@ -20,19 +24,17 @@ jobs:
       # Build the Docker image
       - name: Build Docker image
         run: |
-          docker build -t smart-npc-poc:latest .
+          docker build -t ghcr.io/${{ github.repository }}/smart-npc-poc:latest .
 
-      # Step 3: Save the Docker image as a tar file
-      - name: Save Docker image to file
-        run: |
-          docker save smart-npc-poc:latest -o smart_npc_poc_image.tar
+      # Log in to GitHub Container Registry
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Step 4: Commit and push the tar file to the repository
-      - name: Commit and push image tar file
+      # Push the Docker image to GitHub Container Registry
+      - name: Push Docker image
         run: |
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          mv smart_npc_poc_image.tar docker_images/smart_npc_poc_image.tar  # Move to a folder if preferred
-          git add docker_images/smart_npc_poc_image.tar
-          git commit -m "Add Docker image tar file"
-          git push
+          docker push ghcr.io/${{ github.repository }}/smart-npc-poc:latest
