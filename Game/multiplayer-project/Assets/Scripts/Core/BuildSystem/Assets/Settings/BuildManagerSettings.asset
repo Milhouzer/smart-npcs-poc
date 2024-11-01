@@ -16,4 +16,4 @@ MonoBehaviour:
   PreviewSettings:
     Material: {fileID: 2100000, guid: cd41f506264abc0428009799e723b5ed, type: 2}
     Layer: 10
-  Camera: {fileID: 0}
+  Namespace: {fileID: 11400000, guid: 67981fd1853ab9748bdcc5486c23614a, type: 2}

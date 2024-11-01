@@ -9,16 +9,10 @@ namespace Milhouzer.Core.BuildSystem
     public interface IStateObject
     {
         /// <summary>
-        /// Id of the stateholder
-        /// </summary>
-        /// <value></value>
-        // public int Index { get; set; }
-
-        /// <summary>
         /// State identifier
         /// </summary>
         /// <value></value>
-        public string UID { get; set; }
+        public string Uid { get; set; }
 
         /// <summary>
         /// Destroy the state holder object.
@@ -52,7 +46,7 @@ namespace Milhouzer.Core.BuildSystem
 
     /// <summary>
     /// Buildable is a component that should be present on each buildable elements of the game:
-    /// - Specifies which components should be ketp when preview.
+    /// - Specifies which components should be kept when previewing.
     /// - Creates the preview game object.
     /// </summary>
     public class Buildable : MonoBehaviour, IBuildable
@@ -69,15 +63,12 @@ namespace Milhouzer.Core.BuildSystem
 
             foreach (Component component in disableComponents)
             {
-                var componentOnInstance = go.GetComponent(component.GetType());
-                if (componentOnInstance != null)
-                {
-                    DestroyImmediate(componentOnInstance, true);
-                }
+                if (!go.TryGetComponent(component.GetType(), out var comp)) continue;
+                DestroyImmediate(comp, false);
             }
 
             // Disable the animator because it blocks preview scaling...
-            Animator anim = GetComponentInChildren<Animator>();
+            if (!gameObject.TryGetComponent<Animator>(out var anim)) ;
             if(anim) anim.enabled = false;
 
             go.transform.localScale = scale;

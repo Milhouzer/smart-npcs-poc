@@ -3,6 +3,7 @@ using Milhouzer.Core;
 using Milhouzer.Core.Player;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace Milhouzer.UI
@@ -32,38 +33,40 @@ namespace Milhouzer.UI
                 NetworkManager.Singleton.StartHost();
             });
             clientBtn.onClick.AddListener(() => {
-                NetworkManager.Singleton.StartClient();
+                AsyncOperation op = SceneManager.LoadSceneAsync("UI", new LoadSceneParameters(LoadSceneMode.Single));
+                if (op == null) throw new System.Exception("Cannot load UI scene");
+                op.completed += OnUISceneLoaded;
             });
             debugConsoleBtn.onClick.AddListener(() => {
                 debugConsole.Toggle();
             });
-
-            gameManager.OnPlayerConnectedCallback += PlayerConnected;
-            gameManager.OnPlayerDisconnectedCallback += PlayerDisconnected;
         }
-        
+
+        private void OnUISceneLoaded(AsyncOperation obj)
+        {
+            NetworkManager.Singleton.StartClient(); 
+        }
+
         private void PlayerConnected(PlayerData playerData)
         {
-            PlayerCard card = Instantiate(playerCard);
+            PlayerCard card = Instantiate(playerCard, players, true);
 
             // Pimp card
             card.SetPlayer(playerData);
-
-            card.transform.SetParent(players);
             card.GetComponent<Image>().color = playerData.Color;
             card.name = playerData.Username;
             card.gameObject.SetActive(true);
 
             cards.Add(playerData.Username, card);
+            
         }
 
         private void PlayerDisconnected(PlayerData data)
         {
-            bool ok = cards.TryGetValue(data.Username, out PlayerCard card);
-            if(ok) {
-                Destroy(card.gameObject);
-                cards.Remove(data.Username);
-            }
+            if (!cards.TryGetValue(data.Username, out PlayerCard card)) return;
+            
+            Destroy(card.gameObject);
+            cards.Remove(data.Username);
         }
 
     }

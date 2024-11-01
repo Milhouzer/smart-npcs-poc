@@ -14,13 +14,13 @@ namespace Milhouzer.Core.Player
     /// TODO(MINOR):Create generic InputPayload<T> struct to handle different value types
     public struct InputPayload : INetworkSerializable
     {
-        public int tick;
-        public Vector3 inputVector;
+        public int Tick;
+        public Vector3 InputVector;
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
-            serializer.SerializeValue(ref tick);
-            serializer.SerializeValue(ref inputVector);
+            serializer.SerializeValue(ref Tick);
+            serializer.SerializeValue(ref InputVector);
         }
     }
 
@@ -33,17 +33,17 @@ namespace Milhouzer.Core.Player
     /// </summary>
     public struct StatePayload : INetworkSerializable
     {
-        public int tick;
-        public Vector3 position;
-        public Quaternion rotation;
-        public Vector3 velocity;
+        public int Tick;
+        public Vector3 Position;
+        public Quaternion Rotation;
+        public Vector3 Velocity;
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
-            serializer.SerializeValue(ref tick);
-            serializer.SerializeValue(ref position);
-            serializer.SerializeValue(ref rotation);
-            serializer.SerializeValue(ref velocity);
+            serializer.SerializeValue(ref Tick);
+            serializer.SerializeValue(ref Position);
+            serializer.SerializeValue(ref Rotation);
+            serializer.SerializeValue(ref Velocity);
         }
     }
 
@@ -54,56 +54,56 @@ namespace Milhouzer.Core.Player
         /// Movement speed of the player. The input is multiplied by this factor.
         /// </summary>
         [SerializeField]
-        float moveSpeed = 0.1f;
+        private float moveSpeed = 0.1f;
 
         [SerializeField]
-        CameraController cameraController;
+        private CameraController cameraController;
         public CameraController CamController => cameraController;
 
         [SerializeField]
-        AudioListener audioListener;
+        private AudioListener audioListener;
 
         // Controller
-        Vector3 velocity = Vector3.zero;
+        private Vector3 _velocity = Vector3.zero;
 
         // Netcode general
-        NetworkTimer timer;
+        private NetworkTimer _timer;
         /// <summary>
         /// FPS the time will be running at on the server
         /// </summary>
-        const float k_serverTickRate = 60f;
+        private const float k_serverTickRate = 60f;
         /// <summary>
         /// Size of circular buffers
         /// </summary>
-        const int k_bufferSize = 1024;
+        private const int k_bufferSize = 1024;
 
         // Netcode client specific
         /// <summary>
         /// Transform states at every tick
         /// </summary>
-        CircularBuffer<StatePayload> clientStateBuffer;
+        private CircularBuffer<StatePayload> _clientStateBuffer;
         /// <summary>
         /// Inputs states at every tick
         /// </summary>
-        CircularBuffer<InputPayload> clientInputBuffer;
+        private CircularBuffer<InputPayload> _clientInputBuffer;
         /// <summary>
         /// Last processed state that came from the server
         /// </summary>
-        StatePayload lastServerState;
+        private StatePayload _lastServerState;
         /// <summary>
         /// Last successfully reconciled state
         /// </summary>
-        StatePayload lastProcessedState;
+        private StatePayload _lastProcessedState;
 
         // Netcode server specific
         /// <summary>
         /// Simulated states on the server
         /// </summary>
-        CircularBuffer<StatePayload> serverStateBuffer;
+        private CircularBuffer<StatePayload> _serverStateBuffer;
         /// <summary>
         /// Queue inputs as they come in
         /// </summary>
-        Queue<InputPayload> serverInputQueue;
+        private Queue<InputPayload> _serverInputQueue;
 
         [Header("Netcode")]
         [SerializeField] float reconciliationThreshold = 10f;
@@ -116,18 +116,18 @@ namespace Milhouzer.Core.Player
         /// </summary>
         [SerializeField] GameObject clientCube;
 
-        public static event Action<PlayerController> OnPlayerCreatedCallback;
+        public static event Action<PlayerController> OnPlayerReady;
 
         /// <summary>
         /// Instantiate variables instances
         /// </summary>
         void Awake() {
-            timer = new NetworkTimer(k_serverTickRate);
-            clientStateBuffer = new CircularBuffer<StatePayload>(k_bufferSize);
-            clientInputBuffer = new CircularBuffer<InputPayload>(k_bufferSize);
+            _timer = new NetworkTimer(k_serverTickRate);
+            _clientStateBuffer = new CircularBuffer<StatePayload>(k_bufferSize);
+            _clientInputBuffer = new CircularBuffer<InputPayload>(k_bufferSize);
 
-            serverStateBuffer = new CircularBuffer<StatePayload>(k_bufferSize);
-            serverInputQueue = new Queue<InputPayload>();
+            _serverStateBuffer = new CircularBuffer<StatePayload>(k_bufferSize);
+            _serverInputQueue = new Queue<InputPayload>();
         }
 
         public override void OnNetworkSpawn() {
@@ -145,40 +145,20 @@ namespace Milhouzer.Core.Player
 
             if(IsOwner) {
                 Debug.Log("[PlayerController] player object created");
-                OnPlayerCreatedCallback?.Invoke(this);
+                OnPlayerReady?.Invoke(this);
             }
         }
 
-        void Update() {
-            timer.Update(Time.deltaTime);
+        private void Update() {
+            _timer.Update(Time.deltaTime);
             if(UnityEngine.Input.GetKeyDown(KeyCode.Q)) {
                 // transform.position += transform.forward * 20f;
-            }
-
-            if (UnityEngine.Input.GetMouseButtonDown(0)) // 0 is the left mouse button
-            {
-                HandleClick();
-            }
-        }
-
-        private void HandleClick()
-        {
-            Ray ray = cameraController.ScreenToPointRay();
-            RaycastHit hit;
-
-            if (Physics.Raycast(ray, out hit))
-            {
-                ISelectable selectable = hit.collider.GetComponent<ISelectable>();
-                if (selectable != null)
-                {
-                    GameManager.Instance.SelectServerRpc(hit.transform.gameObject, NetworkManager.Singleton.LocalClientId);
-                }
             }
         }
 
         void FixedUpdate() {
 
-            while (timer.ShouldTick()) {
+            while (_timer.ShouldTick()) {
                 HandleClientTick();
                 HandleServerTick();
             }
@@ -191,17 +171,17 @@ namespace Milhouzer.Core.Player
             if (!IsServer) return;
 
             int bufferIndex = -1;
-            while(serverInputQueue.Count > 0) {
-                InputPayload inputPayload = serverInputQueue.Dequeue();
-                bufferIndex = inputPayload.tick % k_bufferSize;
+            while(_serverInputQueue.Count > 0) {
+                InputPayload inputPayload = _serverInputQueue.Dequeue();
+                bufferIndex = inputPayload.Tick % k_bufferSize;
 
                 StatePayload statePayload = SimulateMovement(inputPayload);
-                serverCube.transform.position = statePayload.position;
-                serverStateBuffer.Add(statePayload, bufferIndex);
+                serverCube.transform.position = statePayload.Position;
+                _serverStateBuffer.Add(statePayload, bufferIndex);
             }
 
             if(bufferIndex == -1) return;
-            SendToClientRpc(serverStateBuffer.Get(bufferIndex));
+            SendToClientRpc(_serverStateBuffer.Get(bufferIndex));
         }
 
         /// <summary>
@@ -210,21 +190,21 @@ namespace Milhouzer.Core.Player
         private void HandleClientTick() {
             if (!IsClient || !IsOwner) return;
 
-            int currentTick = timer.CurrentTick;
+            int currentTick = _timer.CurrentTick;
             int bufferIndex = currentTick % k_bufferSize;
 
             if(GameManager.Instance.Input.Move == Vector3.zero) return;
 
             InputPayload inputPayload = new InputPayload() {
-                tick = currentTick,
-                inputVector = GameManager.Instance.Input.Move
+                Tick = currentTick,
+                InputVector = GameManager.Instance.Input.Move
             };
 
-            clientInputBuffer.Add(inputPayload, bufferIndex);
+            _clientInputBuffer.Add(inputPayload, bufferIndex);
             SendToServerRpc(inputPayload);
 
             StatePayload statePayload = ProcessMovement(inputPayload);
-            clientStateBuffer.Add(statePayload, bufferIndex);
+            _clientStateBuffer.Add(statePayload, bufferIndex);
 
             HandleServerReconciliation();
         }
@@ -236,44 +216,41 @@ namespace Milhouzer.Core.Player
         {
             if(!ShouldReconcile()) return;
 
-            int bufferIndex = lastServerState.tick % k_bufferSize;
+            int bufferIndex = _lastServerState.Tick % k_bufferSize;
             if(bufferIndex - 1 < 0) return; // Not enought information to reconcile
 
-            float posError;
-            StatePayload rewindState;
 
-
-            rewindState = IsHost ? serverStateBuffer.Get(bufferIndex - 1) : lastServerState; // Host RPCs execute immediately, we can use the last server state
-            posError = Vector3.Distance(clientStateBuffer.Get(bufferIndex).position, rewindState.position);
+            StatePayload rewindState = IsHost ? _serverStateBuffer.Get(bufferIndex - 1) : _lastServerState; // Host RPCs execute immediately, we can use the last server state
+            float posError = Vector3.Distance(_clientStateBuffer.Get(bufferIndex).Position, rewindState.Position);
 
             if(posError > reconciliationThreshold) {
                 Debug.Break();
                 ReconcileState(rewindState);
             }
 
-            lastProcessedState = lastServerState;
+            _lastProcessedState = _lastServerState;
         }
 
         /// <summary>
         ///
         /// </summary>
         /// <param name="rewindState"></param>
-        void ReconcileState(StatePayload rewindState) {
-            transform.position = rewindState.position;
-            transform.rotation = rewindState.rotation;
-            velocity = rewindState.velocity;
+        private void ReconcileState(StatePayload rewindState) {
+            transform.position = rewindState.Position;
+            transform.rotation = rewindState.Rotation;
+            _velocity = rewindState.Velocity;
 
-            if(!rewindState.Equals(lastServerState)) return;
+            if(!rewindState.Equals(_lastServerState)) return;
 
-            clientStateBuffer.Add(rewindState, rewindState.tick);
+            _clientStateBuffer.Add(rewindState, rewindState.Tick);
 
             // Replay all inputs from the rewind state to the current state
-            int tickToReplay = lastServerState.tick;
+            int tickToReplay = _lastServerState.Tick;
 
-            while(tickToReplay < timer.CurrentTick) {
+            while(tickToReplay < _timer.CurrentTick) {
                 int bufferIndex = tickToReplay % k_bufferSize;
-                StatePayload statePayload = ProcessMovement(clientInputBuffer.Get(bufferIndex));
-                clientStateBuffer.Add(statePayload, bufferIndex);
+                StatePayload statePayload = ProcessMovement(_clientInputBuffer.Get(bufferIndex));
+                _clientStateBuffer.Add(statePayload, bufferIndex);
                 tickToReplay++;
             }
         }
@@ -282,10 +259,10 @@ namespace Milhouzer.Core.Player
         ///
         /// </summary>
         /// <returns></returns>
-        bool ShouldReconcile() {
-            bool isNewServerState = !lastServerState.Equals(default);
-            bool isLastStateUndefinedOrDifferent = lastProcessedState.Equals(default)
-                                                    || !lastProcessedState.Equals(lastServerState);
+        private bool ShouldReconcile() {
+            bool isNewServerState = !_lastServerState.Equals(default);
+            bool isLastStateUndefinedOrDifferent = _lastProcessedState.Equals(default)
+                                                    || !_lastProcessedState.Equals(_lastServerState);
 
             return isNewServerState && isLastStateUndefinedOrDifferent;
         }
@@ -295,11 +272,11 @@ namespace Milhouzer.Core.Player
         /// </summary>
         /// <param name="statePayload"></param>
         [ClientRpc]
-        void SendToClientRpc(StatePayload statePayload) {
-            serverCube.transform.position = statePayload.position;
+        private void SendToClientRpc(StatePayload statePayload) {
+            serverCube.transform.position = statePayload.Position;
 
             if (!IsOwner) return;
-            lastServerState = statePayload;
+            _lastServerState = statePayload;
         }
 
         /// <summary>
@@ -307,9 +284,9 @@ namespace Milhouzer.Core.Player
         /// </summary>
         /// <param name="inputPayload"></param>
         [ServerRpc]
-        void SendToServerRpc(InputPayload inputPayload)
+        private void SendToServerRpc(InputPayload inputPayload)
         {
-            serverInputQueue.Enqueue(inputPayload);
+            _serverInputQueue.Enqueue(inputPayload);
         }
 
         /// <summary>
@@ -317,19 +294,19 @@ namespace Milhouzer.Core.Player
         /// </summary>
         /// <param name="inputPayload"></param>
         /// <returns></returns>
-        StatePayload SimulateMovement(InputPayload inputPayload) {
+        private StatePayload SimulateMovement(InputPayload inputPayload) {
             Physics.simulationMode = SimulationMode.Script;
 
-            Move(inputPayload.inputVector);
+            Move(inputPayload.InputVector);
             Physics.Simulate(Time.fixedDeltaTime);
 
             Physics.simulationMode = SimulationMode.FixedUpdate;
 
             return new StatePayload() {
-                tick = inputPayload.tick,
-                position = transform.position,
-                rotation = transform.rotation,
-                velocity = velocity
+                Tick = inputPayload.Tick,
+                Position = transform.position,
+                Rotation = transform.rotation,
+                Velocity = _velocity
             };
         }
 
@@ -338,14 +315,14 @@ namespace Milhouzer.Core.Player
         /// </summary>
         /// <param name="inputPayload"></param>
         /// <returns></returns>
-        StatePayload ProcessMovement(InputPayload inputPayload){
-            Move(inputPayload.inputVector);
+        private StatePayload ProcessMovement(InputPayload inputPayload){
+            Move(inputPayload.InputVector);
 
             return new StatePayload() {
-                tick = inputPayload.tick,
-                position = transform.position,
-                rotation = transform.rotation,
-                velocity = velocity
+                Tick = inputPayload.Tick,
+                Position = transform.position,
+                Rotation = transform.rotation,
+                Velocity = _velocity
             };
         }
 
@@ -353,7 +330,7 @@ namespace Milhouzer.Core.Player
         /// Movement logic.
         /// </summary>
         /// <param name="input"></param>
-        void Move(Vector3 input) {
+        private void Move(Vector3 input) {
             transform.position += input * moveSpeed;
         }
     }

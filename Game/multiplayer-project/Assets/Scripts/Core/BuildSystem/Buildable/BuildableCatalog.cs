@@ -15,9 +15,9 @@ namespace Milhouzer.Core.BuildSystem
         // Implement the GetEnumerator method for IEnumerable<BuildableElement>
         public IEnumerator<BuildableElement> GetEnumerator()
         {
-            for (int i = 0; i < buildables.Length; i++)
+            foreach (var t in buildables)
             {
-                yield return buildables[i];
+                yield return t;
             }
         }
 
@@ -29,12 +29,11 @@ namespace Milhouzer.Core.BuildSystem
         public bool Get(Func<BuildableElement, bool> predicate, out BuildableElement element)
         {
             element = default;
-            foreach(BuildableElement e in buildables){
-                if(predicate(e))
-                {
-                    element = e;
-                    return true;
-                }
+            foreach(BuildableElement e in buildables)
+            {
+                if (!predicate(e)) continue;
+                element = e;
+                return true;
             }
             return false;
         }
