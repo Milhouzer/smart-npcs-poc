@@ -1,12 +1,14 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Milhouzer.Core.BuildSystem.StatesManagement
 {
     [System.Serializable]
-    public struct Node 
+    public struct Node : IEquatable<Node>
     { 
         /// <summary>
         /// Encoded symbol. Symbols must be unique in a tree
@@ -33,6 +35,21 @@ namespace Milhouzer.Core.BuildSystem.StatesManagement
         public Node GetChild(char c)
         {
             return Child.FirstOrDefault(x => x.Symbol == c);
+        }
+
+        public bool Equals(Node other)
+        {
+            return Symbol == other.Symbol && UID == other.UID;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Node other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Symbol, UID);
         }
     }
 
@@ -63,33 +80,31 @@ namespace Milhouzer.Core.BuildSystem.StatesManagement
 
         public Node GetNode(char symbol)
         {
-            foreach (var node in Nodes)
+            foreach (var result in Nodes.Select(node => FindNodeDfs(node, symbol)).Where(result => !result.Equals(default(Node))))
             {
-                var result = FindNodeDFS(node, symbol);
-                if (!result.Equals(default(Node))) return result; 
+                return result;
             }
 
             return default(Node);
         }
 
-        public Node GetNode(string UID)
+        public Node GetNode(string uid)
         {
-            foreach (var node in Nodes)
+            foreach (var result in Nodes.Select(node => FindNodeDFS(node, uid)).Where(result => !result.Equals(default(Node))))
             {
-                var result = FindNodeDFS(node, UID);
-                if (!result.Equals(default(Node))) return result; 
+                return result;
             }
 
             return default(Node);
         }
 
-        private Node FindNodeDFS(Node node, char symbol)
+        private static Node FindNodeDfs(Node node, char symbol)
         {
             if (node.Symbol == symbol) return node;
 
             foreach (var child in node.Child)
             {
-                var result = FindNodeDFS(child, symbol);
+                var result = FindNodeDfs(child, symbol);
                 Debug.Log($"Find node DFS for {symbol}: {result.UID}:{result.Symbol}");
                 if (result.Symbol == symbol) return result;
             }

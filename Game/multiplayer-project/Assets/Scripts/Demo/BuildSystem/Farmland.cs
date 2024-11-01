@@ -8,14 +8,14 @@ using System.Text.RegularExpressions;
 namespace Milhouzer.Game.BuildSystem
 {
     /// <summary>
-    /// IStateObject implementations should be stateless and rely only of static informations such as tables and update rules
+    /// IStateObject implementations should be stateless and only rely on static information such as tables and update rules
     /// </summary>
     public class Farmland : MonoBehaviour, IStateObject, IContextActionHandler
     {
         readonly string _seedPattern = @"^FARMLAND\.([^.]+)\.";
 
         [HideInInspector]
-        public string UID { get; set; }
+        public string Uid { get; set; }
 
         public void Destroy()
         {
@@ -24,11 +24,11 @@ namespace Milhouzer.Game.BuildSystem
 
         public void PlantSeed(Seed seed)
         {
-            BuildManager.Instance.RequestBuildUpdate(this, UID + "." + seed.Name);
+            BuildManager.Instance.RequestBuildUpdate(this, Uid + "." + seed.Name);
         }
 
         public void WaterPlant() {
-            List<string> splitStates = UID.Split('.').ToList();
+            List<string> splitStates = Uid.Split('.').ToList();
             BuildManager.Instance.RequestBuildUpdate(this, GetNextWaterState(splitStates));
         }
 

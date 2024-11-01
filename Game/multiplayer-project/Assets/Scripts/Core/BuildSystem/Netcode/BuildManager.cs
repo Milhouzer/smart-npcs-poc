@@ -5,11 +5,12 @@ using Milhouzer.Core.BuildSystem.StatesManagement;
 using Milhouzer.Utils;
 using Unity.Netcode;
 using UnityEngine;
+using Utils;
 
 namespace Milhouzer.Core.BuildSystem
 {
     /// <summary>
-    /// PreviewSettings holds vizualisation and technical settings: preview model material, collision layer, etc.
+    /// PreviewSettings holds visualisation and technical settings: preview model material, collision layer, etc.
     /// </summary>
     [Serializable]
     public class PreviewSettings {
@@ -20,14 +21,14 @@ namespace Milhouzer.Core.BuildSystem
     /// <summary>
     /// BuildManager handles the building system, objects are previewed locally, a ServerRpc is sent to spawn objects on the network.
     /// </summary>
-    public unsafe class BuildManager : NetworkedSingleton<BuildManager> 
+    public unsafe class BuildManager : NetworkedSingleton<BuildManager>, IManager<BuildManagerSettings>
     {
         #region Attributes
 
         /// <summary>
         /// Objects that can be built.
         /// </summary>
-        [SerializeField] BuildableCatalog catalog;
+        [SerializeField] private BuildableCatalog catalog;
 
         /// <summary>
         /// Catalog accessor
@@ -37,44 +38,41 @@ namespace Milhouzer.Core.BuildSystem
         /// <summary>
         /// Preview settings.
         /// </summary>
-        [SerializeField] PreviewSettings previewSettings;
+        [SerializeField]private PreviewSettings previewSettings;
 
         /// <summary>
         /// Camera used to raycast for preview placement.
         /// </summary>
-        Camera cam;
+        private Camera _camera;
 
         /// <summary>
         /// Preview handler used to preview buildings in the world.
         /// </summary>
-        BuilderPreview preview;
-        
-        /// <summary>
-        /// Visuals representations of server states kept by the client only.
-        /// </summary>
-        // List<BuildEntry> Visuals;
+        private BuilderPreview _preview;
 
         /// <summary>
         /// Current selected buildable.
         /// </summary>
-        int selectedBuildable = 0;
+        private int _selectedBuildable = 0;
 
         /// <summary>
-        /// <see cref="selectedBuildable"/> accessor.
+        /// <see cref="_selectedBuildable"/> accessor.
         /// </summary>
-        public int Selected =>  selectedBuildable % catalog.Count();
+        public int Selected =>  _selectedBuildable % catalog.Count();
 
         /// <summary>
         /// Marker to indicate the selection index changed
         /// </summary>
-        Timer UpdatePreviewTimer;
+        private Timer _updatePreviewTimer;
 
         /// <summary>
         /// Client-side saved states to represent 3d objects.
         /// </summary>
         /// <returns></returns>
-        Dictionary<int, IStateObject> States = new();
+        private readonly Dictionary<int, IStateObject> _states = new();
 
+        private StatesManager _statesManager;
+        
         #endregion
         #region Client events
             
@@ -92,29 +90,32 @@ namespace Milhouzer.Core.BuildSystem
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+
             OnManagerInstantiated?.Invoke();
-            if (IsServer)
-            {
-                // Load save, do server logic.
-            }else{
-                // Visuals = new List<BuildEntry>();
-            }
+            
         }
 
         /// <summary>
         /// Init method, register callbacks for client and initialize objects catalog on both client and server.
         /// </summary>
         /// <param name="settings"></param>
-        public void Init(BuildManagerSettings settings)
+        public void InitClientManager(BuildManagerSettings settings)
         {
-            catalog = settings.Catalog;
+            if (!IsClient) return;
 
-            if(IsClient) {
-                previewSettings = settings.PreviewSettings;
-                UpdatePreviewTimer = new Timer(0.3f, UpdatePreviewObject);
-                SyncVisuals();
-                StatesManager.Instance.ReplicatedStates.OnListChanged += OnClientStatesChanged;
-            }
+            _statesManager = new StatesManager(settings.Namespace);
+            catalog = settings.Catalog;
+            previewSettings = settings.PreviewSettings;
+            _updatePreviewTimer = new Timer(0.3f, UpdatePreviewObject);
+            SyncVisuals();
+            _statesManager.ReplicatedStates.OnListChanged += OnClientStatesChanged;
+        }
+
+        public void InitServerManager(BuildManagerSettings settings)
+        {
+            if (!IsServer) return;
+            
+            _statesManager = new StatesManager(settings.Namespace);
         }
 
         #region Visuals management
@@ -127,10 +128,10 @@ namespace Milhouzer.Core.BuildSystem
         {
             if(IsServer) return;
 
-            int _index = 0;
-            foreach (ReplicatedStateInformation rs in StatesManager.Instance.ReplicatedStates)
+            int index = 0;
+            foreach (ReplicatedStateInformation rs in _statesManager.ReplicatedStates)
             {
-                BuildVisual(rs.State, _index, rs.Transform);
+                BuildVisual(rs.State, index, rs.Transform);
             }
         }
 
@@ -138,10 +139,9 @@ namespace Milhouzer.Core.BuildSystem
         /// <summary>
         /// Callback called when the server states have changed
         /// </summary>
-        /// <param name="changeEvent"></param>
+        /// <param name="e"></param>
         private void OnClientStatesChanged(NetworkListEvent<ReplicatedStateInformation> e)
         {
-            
             Debug.Log($"OnClientStateChanged");
             switch(e.Type){
                 case NetworkListEvent<ReplicatedStateInformation>.EventType.Add:
@@ -158,7 +158,8 @@ namespace Milhouzer.Core.BuildSystem
 
         /// <summary>
         /// 
-        /// </summary>
+        /// </summary>4
+        /// <param name="index"></param>
         /// <param name="value"></param>
         private void CreateVisual(int index, ReplicatedStateInformation value)
         {
@@ -197,14 +198,14 @@ namespace Milhouzer.Core.BuildSystem
         /// <param name="tr"></param>
         private void BuildVisual(char c, int index, TransformPayload tr)
         {
-            string UID = StatesManager.Instance.GetUID(c);
+            string uid = _statesManager.GetUid(c);
 
-            if(!catalog.Get(x => x.UID == UID, out BuildableElement elem)) {
-                Debug.Log($"{UID}:{c} does not exist in catalog");
+            if(!catalog.Get(x => x.UID == uid, out BuildableElement elem)) {
+                Debug.Log($"{uid}:{c} does not exist in catalog");
                 return;
             }
 
-            Debug.Log($"BuildVisual {c}:{UID} at index {index}, transform {tr}");
+            Debug.Log($"BuildVisual {c}:{uid} at index {index}, transform {tr}");
 
             GameObject visual = elem.Object.Build(tr.position, tr.rotation, tr.scale);
             if(!visual.TryGetComponent<IStateObject>(out var holder)) {
@@ -212,20 +213,20 @@ namespace Milhouzer.Core.BuildSystem
                 return;
             }
 
-            holder.UID = UID;
-            if(States.TryGetValue(index, out IStateObject existing))
+            holder.Uid = uid;
+            if(_states.TryGetValue(index, out IStateObject existing))
             {
                 existing.Destroy();
-                States[index] = holder;
+                _states[index] = holder;
                 return;
             }
 
-            States.Add(index, holder);
+            _states.Add(index, holder);
         }
 
         int GetKeyByValue(IStateObject value)
         {
-            foreach (var kvp in States)
+            foreach (var kvp in _states)
             {
                 if (kvp.Value.Equals(value))
                 {
@@ -245,10 +246,10 @@ namespace Milhouzer.Core.BuildSystem
         public void RequestEnterBuildMode() {
 
             Debug.Log("[BuildManager] enter building mode");
-            preview = new BuilderPreview(catalog[selectedBuildable], previewSettings);
+            _preview = new BuilderPreview(catalog[_selectedBuildable], previewSettings);
 
             // TODO(OPEN): Move to UI component ??
-            UpdatePreviewTimer.Restart();
+            _updatePreviewTimer.Restart();
             OnEnterBuildMode?.Invoke();
         }
 
@@ -258,13 +259,13 @@ namespace Milhouzer.Core.BuildSystem
         public void RequestExitBuildMode() {
 
             Debug.Log("[BuildManager] exit building mode");
-            if (preview != null) {
-                preview.Cleanup();
-                preview = null;
+            if (_preview != null) {
+                _preview.Cleanup();
+                _preview = null;
             }
 
             // TODO(OPEN): Move to UI component
-            UpdatePreviewTimer.Stop();
+            _updatePreviewTimer.Stop();
             OnExitBuildMode?.Invoke();
         }
 
@@ -274,7 +275,7 @@ namespace Milhouzer.Core.BuildSystem
         /// <param name="amount"></param>
         internal void RequestSelect(int amount)
         {
-            selectedBuildable = (selectedBuildable + amount % catalog.Count() + catalog.Count()) % catalog.Count();
+            _selectedBuildable = (_selectedBuildable + amount % catalog.Count() + catalog.Count()) % catalog.Count();
             NotifyIndexChanged_Internal();
         }
 
@@ -283,7 +284,7 @@ namespace Milhouzer.Core.BuildSystem
         /// </summary>
         private void NotifyIndexChanged_Internal()
         {
-            UpdatePreviewTimer.Restart();
+            _updatePreviewTimer.Restart();
             OnBuildSelectionChange?.Invoke(Selected);
         }
 
@@ -292,39 +293,39 @@ namespace Milhouzer.Core.BuildSystem
         /// </summary>
         /// <param name="pos"></param>
         public void Preview(Vector3 pos) {
-            if(preview == null) {
+            if(_preview == null) {
                 Debug.LogWarning("preview is null");
                 return;
             }
 
-            if(UpdatePreviewTimer.IsRunning){
-                UpdatePreviewTimer.Update(Time.deltaTime);
+            if(_updatePreviewTimer.IsRunning){
+                _updatePreviewTimer.Update(Time.deltaTime);
             } 
-            preview.Preview(pos, Quaternion.identity, Vector3.one);
+            _preview.Preview(pos, Quaternion.identity, Vector3.one);
         }
 
         /// <summary>
         /// 
         /// </summary>
         private void UpdatePreviewObject() {
-            Debug.Log("[BuildManager] update preview for index " + selectedBuildable);
-            preview.Cleanup();
-            preview = new BuilderPreview(catalog[Mathf.Abs(selectedBuildable)], previewSettings);
-            UpdatePreviewTimer.Stop();
+            Debug.Log("[BuildManager] update preview for index " + _selectedBuildable);
+            _preview.Cleanup();
+            _preview = new BuilderPreview(catalog[Mathf.Abs(_selectedBuildable)], previewSettings);
+            _updatePreviewTimer.Stop();
         }
 
         /// <summary>
         /// Input handle to rotate 
         /// </summary>
         public void RequestPreviewRotation(Vector2 amount) {
-            preview.Rotate(amount.y);
+            _preview.Rotate(amount.y);
         }
 
         /// <summary>
         /// 
         /// </summary>
         public void RequestPreviewScale(Vector2 amount) {
-            preview.Scale(amount.y);
+            _preview.Scale(amount.y);
         }
 
         /// <summary>
@@ -333,10 +334,10 @@ namespace Milhouzer.Core.BuildSystem
         public void RequestBuild()
         {
             BuildPayload payload = new BuildPayload(
-                selectedBuildable,
-                preview.Position,
-                preview.Rotation,
-                preview.LocalScale
+                _selectedBuildable,
+                _preview.Position,
+                _preview.Rotation,
+                _preview.LocalScale
 
             );
             BuildServerRpc(payload);
@@ -346,19 +347,19 @@ namespace Milhouzer.Core.BuildSystem
         /// Update the desired object for the specified next one.
         /// </summary>
         /// <param name="stateObject">Object to update</param>
-        /// <param name="next">The state the object should update to</param>
+        /// <param name="nextID">The state the object should update to</param>
         public void RequestBuildUpdate(IStateObject stateObject, string nextID)
         {
             int i = GetKeyByValue(stateObject);
             if(-1 == i) {
-                Debug.LogWarning($"Cannot update {stateObject} from {stateObject.UID} to {nextID}, not registered on client side.");
+                Debug.LogWarning($"Cannot update {stateObject} from {stateObject.Uid} to {nextID}, not registered on client side.");
                 return;
             }
 
-            char cur = StatesManager.Instance.GetSymbol(States[i].UID);
-            char next = StatesManager.Instance.GetSymbol(nextID);
+            char cur = _statesManager.GetSymbol(_states[i].Uid);
+            char next = _statesManager.GetSymbol(nextID);
             if(cur == char.MaxValue || next == char.MaxValue){
-                Debug.LogWarning($"Cannot update {stateObject} from {States[i].UID} to {nextID}, one of the UID does not exist.");
+                Debug.LogWarning($"Cannot update {stateObject} from {_states[i].Uid} to {nextID}, one of the UID does not exist.");
                 return;
             }
             Debug.Log($"[BuildManager] Request {stateObject} update for {nextID}: cur={cur} and next={next}");
@@ -372,8 +373,8 @@ namespace Milhouzer.Core.BuildSystem
         /// </summary>
         public void RequestReset()
         {
-            if(preview != null) {
-                preview.Reset();
+            if(_preview != null) {
+                _preview.Reset();
             }
         }
 
@@ -386,7 +387,8 @@ namespace Milhouzer.Core.BuildSystem
         /// <summary>
         /// Modify world state according to the id
         /// </summary>
-        /// <param name="inputPayload"></param>
+        /// <param name="payload"></param>
+        /// <param name="serverRpcParams"></param>
         [ServerRpc(RequireOwnership = false)]
         void BuildServerRpc(BuildPayload payload, ServerRpcParams serverRpcParams = default)
         {
@@ -394,30 +396,24 @@ namespace Milhouzer.Core.BuildSystem
             
             BuildableElement elem = catalog[payload.index];
 
-            // TODO(OPEN): Inverse dependancy?
-            bool res = StatesManager.Instance.CreateState(elem.UID, payload.transformPayload);
-            if(res){
-                Debug.Log($"Visual {elem.UID} created at pos: {payload.transformPayload.position}, rot: {payload.transformPayload.rotation}, scale: {payload.transformPayload.scale}");
-            }else{
-                Debug.Log($"Visual {elem.UID} could not be created.");
-            }
+            // TODO(OPEN): Inverse dependency?
+            Debug.Log(_statesManager.CreateState(elem.UID, payload.transformPayload)
+                ? $"Visual {elem.UID} created at pos: {payload.transformPayload.position}, rot: {payload.transformPayload.rotation}, scale: {payload.transformPayload.scale}"
+                : $"Visual {elem.UID} could not be created.");
         }
 
         /// <summary>
         /// Modify world state according to the id
         /// </summary>
-        /// <param name="inputPayload"></param>
+        /// <param name="payload"></param>
         [ServerRpc(RequireOwnership = false)]
-        void UpdateBuildServerRpc(BuildUpdatePayload payload) 
+        private void UpdateBuildServerRpc(BuildUpdatePayload payload)
         {
             if(!IsServer) return;
 
-            bool res = StatesManager.Instance.UpdateState(payload.Index, payload.Current, payload.Next);
-            if(res){
-                Debug.Log($"Visual {payload.Index} updated for: {payload.Next}");
-            }else{
-                Debug.Log($"Visual {payload.Index} could not be updated.");
-            }
+            Debug.Log(_statesManager.UpdateState(payload.Index, payload.Current, payload.Next)
+                ? $"Visual {payload.Index} updated for: {payload.Next}"
+                : $"Visual {payload.Index} could not be updated.");
         }
 
         #endregion
