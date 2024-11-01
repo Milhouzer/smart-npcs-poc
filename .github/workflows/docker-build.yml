@@ -1,0 +1,38 @@
+name: Build Docker Image
+
+on:
+  push:
+    branches:
+      - brechi/develop  # Trigger the workflow on push to the main branch
+
+  # Optionally, you can enable manual trigger
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Build the Docker image
+      - name: Build Docker image
+        run: |
+          docker build -t smart-npc-poc:latest .
+
+      # Step 3: Save the Docker image as a tar file
+      - name: Save Docker image to file
+        run: |
+          docker save smart-npc-poc:latest -o smart_npc_poc_image.tar
+
+      # Step 4: Commit and push the tar file to the repository
+      - name: Commit and push image tar file
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          mv smart_npc_poc_image.tar docker_images/smart_npc_poc_image.tar  # Move to a folder if preferred
+          git add docker_images/smart_npc_poc_image.tar
+          git commit -m "Add Docker image tar file"
+          git push

@@ -1,3 +1,5 @@
 #LaBrens
 Brechi/**/*.ipynb
 Brechi/.*/
+__pycache__/
+.vscode/
