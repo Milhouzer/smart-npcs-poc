@@ -5,9 +5,9 @@ on:
     branches:
       - brechi/develop  # Trigger the workflow on push to the specified branch
 
-    pull_request:
-      branches:
-        - brechi/develop  # Trigger the workflow on pull requests targeting the develop branch
+  pull_request:
+    branches:
+      - brechi/develop  # Trigger the workflow on pull requests targeting the develop branch
     
   # Optionally, you can enable manual trigger
   workflow_dispatch:
