@@ -3,23 +3,22 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.Serialization;
 
 namespace Http
 {
     public class ApiClient : MonoBehaviour
     {
         [Header("API Configuration")]
-        [SerializeField] private string baseUrl = "https://api.example.com";
-        [SerializeField] private string endpoint = "/default-endpoint";
-        [SerializeField] private float timeout = 30f;  // Timeout in seconds
-
-        private const string TestEndpoint = "/test";
+        [SerializeField] private string baseUrl = "http://172.20.10.10";
+        [SerializeField] private string basePort = "8000";
+        [SerializeField] private string baseEndpoint = "/test";
+        [SerializeField] private float timeout = 30f; 
 
         public void MakeTestRequest()
         {
             MakeRequest(
                 UnityWebRequest.kHttpVerbGET,
-                endpointOverride: TestEndpoint,
                 onSuccess: OnTestRequestSuccess,
                 onError:OnTestRequestError
                 );
@@ -52,7 +51,8 @@ namespace Http
             Action<string> onSuccess = null,
             Action<string> onError = null)
         {
-            string url = $"{baseUrl}{(string.IsNullOrEmpty(endpointOverride) ? endpoint : endpointOverride)}";
+            string url = $"{baseUrl}:{basePort}{(string.IsNullOrEmpty(endpointOverride) ? baseEndpoint : endpointOverride)}";
+            Debug.Log($"[API Client] send request {method} / {url}");
             StartCoroutine(SendRequest(url, method, headers, jsonBody, onSuccess, onError));
         }
 
