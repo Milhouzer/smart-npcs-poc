@@ -1,6 +1,4 @@
-﻿using Palmmedia.ReportGenerator.Core.Common;
-
-namespace Http
+﻿namespace Http
 {
     public static class Utils
     {

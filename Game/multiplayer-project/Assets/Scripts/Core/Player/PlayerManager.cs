@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using Milhouzer.Utils;
 using Unity.Netcode;
 using UnityEngine;
 
 namespace Milhouzer.Core.Player
 {
-    public class PlayerManager : NetworkBehaviour
+    public class PlayerManager : NetworkedSingleton<PlayerManager>
     {
         [SerializeField] 
         
@@ -13,10 +14,23 @@ namespace Milhouzer.Core.Player
         
         private NetworkList<PlayerData> _networkPlayersData;
 
+        public List<PlayerData> GetPlayersData()
+        {
+            // Create a new list to hold the player data
+            List<PlayerData> playersData = new List<PlayerData>();
+
+            // Copy each item from _networkPlayersData to the new list
+            foreach (var playerData in _networkPlayersData)
+            {
+                playersData.Add(playerData);
+            }
+
+            return playersData;
+        }
+
         public delegate void OwnerConnectedEvent();
         public delegate void PlayerConnectedEvent(PlayerData data);
         public delegate void PlayerDisconnectedEvent(PlayerData data);
-        public static event OwnerConnectedEvent OnOwnerConnected;
         public static event PlayerConnectedEvent OnPlayerConnected;
         public static event PlayerDisconnectedEvent OnPlayerDisconnected;
         
@@ -40,16 +54,9 @@ namespace Milhouzer.Core.Player
         {
             if (!IsClient) return;
             
-            _networkPlayersData.OnListChanged += OnClientListChanged;
-
-            if (IsOwner) InitOwner();
+            _networkPlayersData.OnListChanged += HandlePlayersListChanged;
         }
-
-        private void InitOwner()
-        {
-            OnOwnerConnected?.Invoke();
-        }
-
+        
         private void InitServer()
         {
             if (!IsServer) return;
@@ -57,7 +64,6 @@ namespace Milhouzer.Core.Player
             Utility.Shuffle(ref playerColors);   
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnectedCallback;
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnectCallback;
-            _networkPlayersData.OnListChanged += OnServerListChanged;
         }
         
         private void OnClientConnectedCallback(ulong clientId)
@@ -96,28 +102,7 @@ namespace Milhouzer.Core.Player
             Debug.Log($"Player {clientId} disconnected");
 
         }
-        
-        void OnServerListChanged(NetworkListEvent<PlayerData> changeEvent)
-        {
-            Debug.Log($"[GameManager_Server] The list changed and now has {_networkPlayersData.Count} elements on server:");
-            foreach(PlayerData data in _networkPlayersData) {
-                Debug.Log($"\r\n{data.Username}: {data.Color}");
-            }
-            HandlePlayersListChanged(changeEvent);
-        }
 
-        void OnClientListChanged(NetworkListEvent<PlayerData> changeEvent)
-        {
-            if (NetworkManager.Singleton.LocalClientId == changeEvent.Value.Id) return;
-
-            Debug.Log($"[GameManager_Client] The list changed and now has {_networkPlayersData.Count} elements {this.OwnerClientId}, {changeEvent.Value.Id}");
-            foreach(PlayerData data in _networkPlayersData) {
-                Debug.Log($"\r\n{data.Username}: {data.Color}");
-            }
-            HandlePlayersListChanged(changeEvent);
-        }
-        
-        // Q: How do clients receive event, is it because OnPlayerConnectedCallback is static ?
         private void HandlePlayersListChanged(NetworkListEvent<PlayerData> changeEvent)
         {
             Debug.Log($"Handle event change {changeEvent.Type}: {changeEvent.Value.Username}");
