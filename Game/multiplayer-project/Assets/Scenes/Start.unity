@@ -2221,10 +2221,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   clientBtn: {fileID: 2123644469}
   serverBtn: {fileID: 1652404570}
-  usernameText: {fileID: 224864463}
-  passwordText: {fileID: 1861835057}
-  serverIP: {fileID: 1134485219}
-  serverPort: {fileID: 179087110}
+  usernameText: {fileID: 1789247179}
+  passwordText: {fileID: 1274429843}
+  serverIP: {fileID: 1216384731}
+  serverPort: {fileID: 1174108643}
 --- !u!114 &552745449
 MonoBehaviour:
   m_ObjectHideFlags: 0
