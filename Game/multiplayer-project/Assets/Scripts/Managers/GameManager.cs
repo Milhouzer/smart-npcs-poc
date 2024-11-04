@@ -7,6 +7,7 @@ using Milhouzer.Input;
 using Milhouzer.Core.BuildSystem;
 using Milhouzer.Core.Player;
 using Milhouzer.UI;
+using UnityEngine.SceneManagement;
 using Utils;
 
 namespace Milhouzer.Core
@@ -53,6 +54,14 @@ namespace Milhouzer.Core
         private void Awake() {
             _networkPlayersData = new NetworkList<PlayerData>(new List<PlayerData>(), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
             PlayerController.OnPlayerReady += OnPlayerReadyEventHandler;
+        }
+
+        private void Start()
+        {
+            if (IsSpawned) return;
+            
+            Debug.Log("Start client!!!!");
+            NetworkManager.Singleton.StartClient(); 
         }
 
         public override void OnNetworkSpawn()
@@ -104,8 +113,13 @@ namespace Milhouzer.Core
         public void InitClientManager(GameManagerSettings managerSettings)
         {
             Debug.Log("[GameManager] Init as client");
-            InitClientUIManager(Settings.UIManagerSettings);
-            InitClientBuildManager(Settings.BuildManagerSettings);
+            AsyncOperation op = SceneManager.LoadSceneAsync("UIScene", new LoadSceneParameters(LoadSceneMode.Additive));
+            if (op == null) throw new System.Exception("Cannot load UI scene");
+            op.completed += (operation =>
+            {
+                InitClientUIManager(Settings.UIManagerSettings);
+                InitClientBuildManager(Settings.BuildManagerSettings);
+            });
         }
 
         public void InitServerManager(GameManagerSettings managerSettings)

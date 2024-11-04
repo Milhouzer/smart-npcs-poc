@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using Milhouzer.Core.BuildSystem.ContextActions;
+using Milhouzer.Core.BuildSystem.UI;
 using Milhouzer.Core.Player;
 using Milhouzer.Utils;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 using Utils;
 using UnityEngine.UI;
 
@@ -12,6 +14,8 @@ namespace Milhouzer.UI
 {
     public class UIManager : Singleton<UIManager>, IManager<UIManagerSettings>
     {
+        [SerializeField] private BuilderUI builderUI;
+        
         private ContextAction _heldAction; 
         /// <summary>
         /// 
@@ -33,23 +37,65 @@ namespace Milhouzer.UI
         /// </summary>
         private Camera _camera;
 
-        private void Awake()
+        private void Start()
         {
+            if(!_camera) _camera = Camera.main;
+
+            SyncPlayerCards();
+        }
+        
+        private void OnDestroy()
+        {
+            PlayerManager.OnPlayerConnected -= PlayerConnected;
+            PlayerManager.OnPlayerDisconnected -= PlayerDisconnected;
+        }
+
+
+        /// <summary>
+        /// Set camera for ray casting
+        /// </summary>
+        /// <param name="settings"></param>
+        public void InitClientManager(UIManagerSettings settings)
+        {
+            if(settings.Camera) _camera = settings.Camera;
+            
             PlayerManager.OnPlayerConnected += PlayerConnected;
             PlayerManager.OnPlayerDisconnected += PlayerDisconnected;
+
+            if (builderUI != null)
+            {
+                builderUI.Init();
+            }
+        }
+
+        /// <summary>
+        /// throw if server is loading a UI manger
+        /// </summary>
+        /// <param name="settings"></param>
+        public void InitServerManager(UIManagerSettings settings)
+        {
+            throw new UnityException("UIManager should not init on server side");
         }
 
         [SerializeField] Transform players;
         [SerializeField] PlayerCard playerCard;
 
         Dictionary<string, PlayerCard> cards = new();
-        
-        private void OwnerConnected()
+
+        private void SyncPlayerCards()
         {
-            throw new NotImplementedException();
+            foreach (var data in PlayerManager.Instance.GetPlayersData())
+            {
+                CreatePlayerCard(data);
+            }
         }
         
         private void PlayerConnected(PlayerData playerData)
+        {
+            CreatePlayerCard(playerData);
+        }
+
+        private void CreatePlayerCard(PlayerData playerData)
         {
             PlayerCard card = Instantiate(playerCard, players, true);
 
@@ -60,7 +106,6 @@ namespace Milhouzer.UI
             card.gameObject.SetActive(true);
 
             cards.Add(playerData.Username, card);
-            
         }
 
         private void PlayerDisconnected(PlayerData data)
@@ -69,30 +114,6 @@ namespace Milhouzer.UI
             
             Destroy(card.gameObject);
             cards.Remove(data.Username);
-        }
-
-        private void Start()
-        {
-            _camera = Camera.main;
-        }
-
-        /// <summary>
-        /// Set camera for ray casting
-        /// </summary>
-        /// <param name="settings"></param>
-        public void InitClientManager(UIManagerSettings settings)
-        {
-            _camera = settings.Camera;
-            if(_camera) _camera = _camera;
-        }
-
-        /// <summary>
-        /// Destroy ui manager on server
-        /// </summary>
-        /// <param name="settings"></param>
-        public void InitServerManager(UIManagerSettings settings)
-        {
-            Destroy(gameObject);
         }
 
         /// <summary>

@@ -21,7 +21,7 @@ namespace Milhouzer.Core.BuildSystem
     /// <summary>
     /// BuildManager handles the building system, objects are previewed locally, a ServerRpc is sent to spawn objects on the network.
     /// </summary>
-    public unsafe class BuildManager : NetworkedSingleton<BuildManager>, IManager<BuildManagerSettings>
+    public class BuildManager : NetworkedSingleton<BuildManager>, IManager<BuildManagerSettings>
     {
         #region Attributes
 
@@ -70,7 +70,8 @@ namespace Milhouzer.Core.BuildSystem
         /// </summary>
         /// <returns></returns>
         private readonly Dictionary<int, IStateObject> _states = new();
-
+        
+        [SerializeField]
         private StatesManager _statesManager;
         
         #endregion
@@ -92,7 +93,6 @@ namespace Milhouzer.Core.BuildSystem
             base.OnNetworkSpawn();
 
             OnManagerInstantiated?.Invoke();
-            
         }
 
         /// <summary>
@@ -103,7 +103,8 @@ namespace Milhouzer.Core.BuildSystem
         {
             if (!IsClient) return;
 
-            _statesManager = new StatesManager(settings.Namespace);
+            _statesManager.SetNamespace(settings.Namespace);
+            
             catalog = settings.Catalog;
             previewSettings = settings.PreviewSettings;
             _updatePreviewTimer = new Timer(0.3f, UpdatePreviewObject);
@@ -115,7 +116,7 @@ namespace Milhouzer.Core.BuildSystem
         {
             if (!IsServer) return;
             
-            _statesManager = new StatesManager(settings.Namespace);
+            _statesManager.SetNamespace(settings.Namespace);
         }
 
         #region Visuals management

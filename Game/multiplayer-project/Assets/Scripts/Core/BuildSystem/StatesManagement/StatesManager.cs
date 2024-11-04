@@ -16,12 +16,6 @@ namespace Milhouzer.Core.BuildSystem.StatesManagement
         public char State;
         public TransformPayload Transform;
 
-        public ReplicatedStateInformation(char c, float3 pos, quaternion rot, float3 s)
-        {
-            State = c;
-            Transform = new TransformPayload(pos, rot, s);
-        }
-
         public bool Equals(ReplicatedStateInformation other)
         {
             throw new System.NotImplementedException();
@@ -39,22 +33,25 @@ namespace Milhouzer.Core.BuildSystem.StatesManagement
     /// This is basically a CRUD.
     /// </summary>
     [GenerateSerializationForType(typeof(byte))]
-    public class StatesManager
+    public class StatesManager : NetworkBehaviour
     {
         StatesNamespace Namespace;
 
         public NetworkList<ReplicatedStateInformation> ReplicatedStates;
         readonly List<string> _internalServerStates = new();
-        
+
+        private void Awake()
+        {
+            ReplicatedStates = new NetworkList<ReplicatedStateInformation>();
+        }
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="ns"></param>
-        public StatesManager(StatesNamespace ns)
+        public void SetNamespace(StatesNamespace ns)
         {
-            ReplicatedStates = new NetworkList<ReplicatedStateInformation>();
             Namespace = ns;
-            Namespace.PrintNodes();
         }
 
         internal string GetUid(char c)
