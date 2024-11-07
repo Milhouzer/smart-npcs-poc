@@ -1,0 +1,36 @@
+{
+    "general_knowledge":{
+        "items":{
+            "plants":["glowy_mushroom","medicinal_herb"]
+        },
+        "action":["harvest","inspect","stash","attack","heal","moveto"],
+        "players":{
+            "0":{
+                "temperament":"greedy"
+            },
+            "1":{
+                "temperament":"helpful"
+            }
+        }
+    },
+    "personality_traits":{
+        "adventurous":0.8,
+        "courageous":0.5,
+        "clever":0.05,
+        "curious":0.7
+    },
+    "memory":[
+        {
+            "harvest":[
+                {
+                    "type":"glowy_mushroom",
+                    "at":1730411508
+                },
+                {
+                    "type":"glowy_mushroom",
+                    "at":1730411547
+                }
+            ]
+        }
+    ]
+}
