@@ -27,7 +27,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: Library
-          key: Library-LinuxHeadlessSimulation
+          key: Library-StandaloneLinux64
           restore-keys: Library-
 
       - name: Build Server in Unity
@@ -37,12 +37,12 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          targetPlatform: LinuxHeadlessSimulation
+          targetPlatform: StandaloneLinux64
           customImage: unityci/editor:ubuntu-2022.3.13f1-linux-il2cpp-3.1.0
           # buildMethod: BuildServer  # Use a headless build method if defined
           projectPath: "./Game/multiplayer-project"
           buildName: "game_server"
-          buildsPath: "./server_build/"
+          buildsPath: "./Server_Build/"
 
       - name: Package Server Build in Docker Image for ARM64
         run: |
