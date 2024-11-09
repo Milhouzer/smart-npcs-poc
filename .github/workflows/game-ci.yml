@@ -1,13 +1,20 @@
 name: GameCI
 
 on:
-  push:
-    branches:
-      - milhouzer/develop
+  # push:
+  #   branches:
+  #     - milhouzer/develop
 
+  # pull_request:
+  #   branches:
+  #     - milhouzer/develop
   pull_request:
     branches:
-      - milhouzer/develop
+      - master
+
+  push:
+    branches:
+      - master
     
 
 jobs:
