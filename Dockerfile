@@ -8,7 +8,8 @@ RUN apt-get update && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Add Poetry to PATH
-ENV PATH="/root/.local/bin:$PATH"
+ENV PATH="/root/.local/bin:$PATH" \
+    POETRY_VIRTUALENVS_CREATE=false
 
 # Copy Poetry files for dependency installation
 COPY API/pyproject.toml API/poetry.lock ./
