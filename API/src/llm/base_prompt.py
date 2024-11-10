@@ -44,19 +44,6 @@ def format_prompt_from_payload(payload: dict) -> str:
     )
 
 
-def get_prompt_template():
-    parser = get_parser_output()
-
-    # Define a prompt template
-    prompt_template = PromptTemplate(
-        input_variables=["robot_context", "environment_context"],
-        template=base_prompt_template,
-        partial_variables={"format_instructions": parser.get_format_instructions()},
-    )
-
-    return prompt_template
-
-
 if __name__ == "__main__":
 
     ex_payload = {
