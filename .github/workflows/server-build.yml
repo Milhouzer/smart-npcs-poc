@@ -46,7 +46,6 @@ jobs:
 
       - name: Package Server Build in Docker Image for ARM64
         run: |
-          docker buildx create --use
           IMAGE_NAME=ghcr.io/${{ github.repository }}  # Get the repository name
           IMAGE_NAME_LOWER=$(echo "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')
           docker buildx build --platform linux/arm64 -t "${IMAGE_NAME_LOWER}/game-server:latest" -f ./Game/Dockerfile .
