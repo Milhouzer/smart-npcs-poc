@@ -19,6 +19,11 @@ async def test_api_connexion() -> JSONResponse:
 @app.post("/talk-to-bot")
 async def talk_to_bot(player_query: PlayerQuery) -> JSONResponse:
 
+    # update database according to data pased
+    # how to check if info already exist in base ?
+
+    # if there is a message query -> run rag
+
     bot_answer = "bot answer"  # get_bot_answer(player_query)
 
     return JSONResponse(status_code=200, content=bot_answer)
