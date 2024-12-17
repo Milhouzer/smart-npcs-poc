@@ -75,3 +75,5 @@ crashlytics-build.properties
 API/**/*.ipynb
 API/.*/
 __pycache__/
+
+.env
