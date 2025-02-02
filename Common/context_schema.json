@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Bot Context Schema",
+  "type": "object",
+  "properties": {
+    "player": {
+      "type": "object",
+      "properties": {
+        "data":{
+            "type":"object",
+            "properties": {
+                "player_id": { "type": "string" }
+            },
+            "description": "the player technical data"
+        },
+        "location": {
+          "type": "object",
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "z": { "type": "number" }
+          },
+          "required": ["x", "y", "z"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["idle", "moving", "interacting", "combat", "resting"]
+        },
+        "inventory": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["location", "status", "inventory", "data"]
+    },
+    "bot": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "current_task": { "type": "string" },
+        "energy_level": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "actions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Actions the bot can currently perform"
+        }
+      },
+      "required": ["name", "current_task", "energy_level", "actions"]
+    },
+    "environment": {
+      "type": "object",
+      "properties": {
+        "POIs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "type": { "type": "string" },
+              "location": {
+                "type": "object",
+                "properties": {
+                  "x": { "type": "number" },
+                  "y": { "type": "number" },
+                  "z": { "type": "number" }
+                },
+                "required": ["x", "y", "z"]
+              },
+              "description": { "type": "string" }
+            },
+            "required": ["name", "type", "location"]
+          }
+        },
+        "weather": {
+          "type": "string",
+          "enum": ["sunny", "rainy", "stormy", "foggy", "snowy"]
+        },
+        "time_of_day": {
+          "type": "string",
+          "enum": ["morning", "afternoon", "evening", "night"]
+        }
+      },
+      "required": ["POIs", "weather", "time_of_day"]
+    },
+    "history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "timestamp": { "type": "string", "format": "date-time" },
+          "interaction": { "type": "string" }
+        },
+        "required": ["timestamp", "interaction"]
+      },
+      "description": "Log of recent interactions or events"
+    }
+  },
+  "required": ["player", "bot", "environment", "history"]
+}

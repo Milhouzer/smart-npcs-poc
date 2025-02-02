@@ -1,0 +1,57 @@
+{
+"$schema": "context_schema.json",
+  "player": {
+    "data":{
+        "player_id":"00000001"
+    },
+    "location": {
+      "x": 12.34,
+      "y": 7.89,
+      "z": 0.0
+    },
+    "status": "idle",
+    "inventory": ["apple", "wooden_sword", "map"]
+  },
+  "bot": {
+    "name": "CompanionBot",
+    "current_task": "scouting",
+    "energy_level": 85,
+    "actions": ["move_to", "collect", "defend", "repair"]
+  },
+  "environment": {
+    "POIs": [
+      {
+        "name": "Old Oak Tree",
+        "type": "landmark",
+        "location": {
+          "x": 15.0,
+          "y": 8.0,
+          "z": 0.0
+        },
+        "description": "A towering oak tree with sprawling branches."
+      },
+      {
+        "name": "Crystal Cave Entrance",
+        "type": "resource",
+        "location": {
+          "x": 50.0,
+          "y": 30.0,
+          "z": -5.0
+        },
+        "description": "A cave with sparkling crystal deposits at the entrance."
+      }
+    ],
+    "weather": "sunny",
+    "time_of_day": "afternoon"
+  },
+  "history": [
+    {
+      "timestamp": "2024-11-13T15:20:00Z",
+      "interaction": "Player asked the bot to scout the area."
+    },
+    {
+      "timestamp": "2024-11-13T15:15:00Z",
+      "interaction": "Bot collected 3 berries from the bush."
+    }
+  ]
+}
