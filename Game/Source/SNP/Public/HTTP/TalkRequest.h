@@ -19,9 +19,7 @@ struct SNP_API FTalkRequest
 
 	FTalkRequest(const FString& InMessage, const TArray<FString>& InPOIs)
 		: Message(InMessage), PointsOfInterest(InPOIs)
-	{
-		FString POIsString = FString::Join(InPOIs, TEXT(", "));
-	}
+	{ }
 };
 
 USTRUCT(BlueprintType)
@@ -35,4 +33,34 @@ struct SNP_API FTalkResponse
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	FString Response;
+};
+
+USTRUCT(BlueprintType)
+struct SNP_API FSaveDataRequest
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "PlayerId"))
+	int PlayerId;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "BinaryData"))
+	TArray<uint8> BinaryData;
+
+	FSaveDataRequest(): PlayerId(0)
+	{
+	}
+
+	explicit FSaveDataRequest(const uint32& InPlayerId, const TArray<uint8>& InBinaryData)
+		: PlayerId(InPlayerId), BinaryData(InBinaryData)
+	{ }
+};
+
+USTRUCT(BlueprintType)
+struct SNP_API FSaveDataResponse
+{
+	GENERATED_BODY()
+
+	FSaveDataResponse() { }
+
+	TArray<uint8> BinaryData;
 };
