@@ -61,19 +61,28 @@ public:
 	    TSharedRef<IHttpRequest> Request = CreateRequest(Endpoint, TEXT("GET"));
 	    
 	    Request->OnProcessRequestComplete().BindLambda(
-	        [Callback](FHttpRequestPtr, FHttpResponsePtr Response, bool bWasSuccessful)
+	        [this, Callback](FHttpRequestPtr, FHttpResponsePtr Response, bool bWasSuccessful)
 	        {
 	            TResponse ResultStruct;
 	            bool bParsed = false;
 	            
 	            if (bWasSuccessful && Response.IsValid())
 	            {
-	                bParsed = FJsonObjectConverter::JsonObjectStringToUStruct(
-	                    Response->GetContentAsString(), 
-	                    &ResultStruct,
-	                    0, 0);
+
+					UE_LOG(LogTemp, Log, TEXT("Get response: %s"), *Response->GetContentAsString());
+	            	bParsed = FJsonObjectConverter::JsonObjectStringToUStruct<TResponse>(
+						Response->GetContentAsString(), 
+						&ResultStruct,
+						0, 0);
+                
 	            }
 	            
+	        	if (!bParsed)
+	        	{
+					UE_LOG(LogTemp, Warning, TEXT("JSON Deserialization failed for type: %s"), 
+						*TNameOf<TResponse>::GetName());
+				}
+	        	
 	            Callback(ResultStruct, bParsed);
 	        });
 	        

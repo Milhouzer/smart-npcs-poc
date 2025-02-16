@@ -2,12 +2,12 @@
 
 #include "CoreMinimal.h"
 #include "HTTP/TalkRequest.h"
-#include "BotAPISubsystem.generated.h"
+#include "GameAPISubsystem.generated.h"
 
 class UAPIClient;
 
 UCLASS()
-class SNP_API UBotAPISubsystem : public UGameInstanceSubsystem
+class SNP_API UGameAPISubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 
@@ -20,10 +20,11 @@ public:
 	void SendTalkCommand(const FTalkRequest& Data, TFunction<void(const FTalkResponse&, bool)> Callback);
 
 	UFUNCTION(BlueprintCallable)
-	void SendSaveCommand(const FSaveDataRequest& Data);
+	void SendSaveCommand(const FSaveData& Data);
+	
+	void SendSaveCommand(const FSaveDataArray& Data);
 
-	UFUNCTION(BlueprintCallable)
-	void LoadData(int PlayerId);
+	FLoadedData LoadData(int PlayerId, TFunction<void(const FLoadedDataArray&, bool)> Callback);
     
 private:
 	TObjectPtr<UAPIClient> APIClient;

@@ -1,6 +1,9 @@
 ﻿#include "Vehicle/CaravanInterior.h"
 
+#include "Game/GameAPISubsystem.h"
+#include "Game/Furnitures/Chest.h"
 #include "Game/LevelSimulation/LevelSimulationSubsystem.h"
+#include "Game/Save/SaveState.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Utils/Utility.h"
@@ -11,88 +14,114 @@ ACaravanInterior::ACaravanInterior()
 	bReplicates = true;
     
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("SceneComponent"));;
-	
-	// FloorMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FloorMeshComponent"));
-	// FloorMeshComponent->SetupAttachment(RootComponent);
-	// FloorMeshComponent->SetCanEverAffectNavigation(true);
-	// FloorMeshComponent->SetVisibility(true, true);
 }
 
 void ACaravanInterior::BeginPlay()
 {
 	Super::BeginPlay();
-	// InitializeVisibility();
+	if(HasAuthority())
+	{
+		LoadData();
+	}
 }
 
+void ACaravanInterior::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    
+	// DOREPLIFETIME(ACaravanInterior, VisiblePlayers);
+}
 
-// void ACaravanInterior::InitializeVisibility()
-// {
-// 	// If we're on a client, wait for OnRep_VisiblePlayers
-// 	if (!HasAuthority())
-// 	{
-// 		FloorMeshComponent->SetVisibility(false, true);
-// 		return;
-// 	}
-//         
-// 	// On server, check if we need to update any existing players
-// 	if (APlayerController* LocalPlayer = GetWorld()->GetFirstPlayerController())
-// 	{
-// 		UpdateMeshVisibility(LocalPlayer);
-// 	}
-// }
+void ACaravanInterior::SaveData()
+{
+	FSaveDataArray SaveDataArray;
+	TArray<AActor*> AttachedActors; 
+	this->GetAttachedActors(AttachedActors); 
+	for (auto* Attached : AttachedActors)
+	{    
+		ISaveable* SaveableEntity = Cast<ISaveable>(Attached);
+		if(SaveableEntity == nullptr) continue;
 
-// void ACaravanInterior::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-// {
-// 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-//     
-// 	DOREPLIFETIME(ACaravanInterior, VisiblePlayers);
-// }
+		const TArray<uint8> SaveState = SaveableEntity->GetSaveState();
+		FSaveData SaveData;
+		SaveData.Base64Data = FBase64::Encode(SaveState);
+		SaveDataArray.SaveData.Add(SaveData);
+	}
+	
+	if(UGameAPISubsystem* APISubsystem = GetGameInstance()->GetSubsystem<UGameAPISubsystem>())
+	{
+		APISubsystem->SendSaveCommand(SaveDataArray);
+	}
+}
 
-// void ACaravanInterior::SetVisiblePlayer(APlayerController* PlayerController, bool Visible)
-// {
-//     if (!PlayerController || !HasAuthority())
-//     {
-//     	UE_LOG(LogTemp, Warning, TEXT("Don't set visibility for player"));
-//         return;
-//     }
-//
-//     if (Visible)
-//     {
-// 		UE_LOG(LogTemp, Log, TEXT("Set visibility for player %p"), PlayerController);
-//         VisiblePlayers.AddUnique(PlayerController);
-//     }
-//     else
-//     {
-// 		UE_LOG(LogTemp, Log, TEXT("Set invisibility for player %p"), PlayerController);
-//         VisiblePlayers.Remove(PlayerController);
-//     }
-//     
-//     // Update visibility immediately on the server
-//     UpdateMeshVisibility(PlayerController);
-// }
-//
-// void ACaravanInterior::OnRep_VisiblePlayers()
-// {
-// 	// Update visibility for the local player on clients
-// 	if (APlayerController* LocalPlayer = GetWorld()->GetFirstPlayerController())
-// 	{
-//     	UE_LOG(LogTemp, Log, TEXT("OnRep_VisiblePlayers"));
-// 		UpdateMeshVisibility(LocalPlayer);
-// 	}
-// }
-//
-// void ACaravanInterior::UpdateMeshVisibility(APlayerController* PlayerController)
-// {
-// 	if (!PlayerController || !FloorMeshComponent)
-// 	{
-// 		UE_LOG(LogTemp, Warning, TEXT("Cannot update mesh visibility for player"));
-// 		return;
-// 	}
-//
-// 	const bool bShouldBeVisible = VisiblePlayers.Contains(PlayerController);
-// 	UE_LOG(LogTemp, Log, TEXT("Update %p visibility for %p: %hhd"), FloorMeshComponent, PlayerController, bShouldBeVisible);
-// 	FloorMeshComponent->SetVisibility(bShouldBeVisible, true);
-// }
+void ACaravanInterior::LoadData()
+{
+	UGameAPISubsystem* GameAPISubsystem = GetGameInstance()->GetSubsystem<UGameAPISubsystem>();
+	GameAPISubsystem->LoadData(0, 
+		[this](const FLoadedDataArray& Response, const bool Success)
+		{
+			if (!Success)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Failed to send load command to API."));
+			}
+
+			UE_LOG(LogTemp, Log, TEXT("Response struct: %s"), *Response.ToString());
+			for (auto Data : Response.DataArray)
+			{
+				TArray<uint8> BinData = Data.GetBinaryData();
+			
+				int32 ExtractedId;
+				FMemoryReader Reader = FMemoryReader(BinData);
+				Reader << ExtractedId;
+
+				UE_LOG(LogTemp, Log, TEXT("Extracted ID: %d"), ExtractedId);
+				
+				FSavedObjectKey* FoundObject = Algo::FindByPredicate(ActorsReferences,
+					[ExtractedId](const FSavedObjectKey& Key)
+				{
+					return Key.Id == ExtractedId;
+				});
+
+				if(FoundObject == nullptr)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Unknown object id %d. Can't parse data"), ExtractedId);
+					return;
+				}
+				
+				if(FoundObject->Name == "Chest")
+				{
+					if (!(FoundObject->Type && FoundObject->Type->IsChildOf(AChest::StaticClass())))
+					{
+					   UE_LOG(LogTemp, Warning, TEXT("Type is not AChest"));
+					   return;
+					}
+					
+					UWorld* World = GetWorld();
+					if (!GetWorld())
+					{
+					   UE_LOG(LogTemp, Warning, TEXT("Invalid world"));
+					   return;
+					}
+					AChest* SpawnedChest = World->SpawnActor<AChest>(FoundObject->Type, FVector::ZeroVector, FRotator::ZeroRotator);
+					if (SpawnedChest)
+					{
+					   UE_LOG(LogTemp, Warning, TEXT("Successfully spawned AChest: %s"), *SpawnedChest->GetName());
+					}
+					else
+					{
+					   UE_LOG(LogTemp, Error, TEXT("Failed to spawn AChest"));
+					   return;
+					}
+					
+					TArray<uint8> BinaryData = Data.GetBinaryData();
+					FMemoryReader MemReader(BinaryData);
+					SpawnedChest->LoadSaveState(MemReader);
+					SpawnedChest->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
+					SpawnedChest->SetReplicates(true);
+				}
+			}
+		});
+}
 
 // Simulated level interface implementation
 

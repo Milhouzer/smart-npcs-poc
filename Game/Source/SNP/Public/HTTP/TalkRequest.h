@@ -4,6 +4,11 @@
 #include "JsonObjectConverter.h"
 #include "TalkRequest.generated.h"
 
+
+/************************/
+/*			TALK		*/
+/************************/
+
 USTRUCT(BlueprintType)
 struct SNP_API FTalkRequest
 {
@@ -35,8 +40,12 @@ struct SNP_API FTalkResponse
 	FString Response;
 };
 
+/************************/
+/*		SAVE DATA		*/
+/************************/
+
 USTRUCT(BlueprintType)
-struct SNP_API FSaveDataRequest
+struct SNP_API FSaveData
 {
 	GENERATED_BODY()
 
@@ -44,23 +53,89 @@ struct SNP_API FSaveDataRequest
 	int PlayerId;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "BinaryData"))
-	TArray<uint8> BinaryData;
+	FString Base64Data;
 
-	FSaveDataRequest(): PlayerId(0)
+	FSaveData(): PlayerId(0)
 	{
 	}
 
-	explicit FSaveDataRequest(const uint32& InPlayerId, const TArray<uint8>& InBinaryData)
-		: PlayerId(InPlayerId), BinaryData(InBinaryData)
+	explicit FSaveData(const uint32& InPlayerId, const FString& InBase64Data)
+		: PlayerId(InPlayerId), Base64Data(InBase64Data)
 	{ }
 };
 
 USTRUCT(BlueprintType)
-struct SNP_API FSaveDataResponse
+struct SNP_API FSaveDataArray
 {
 	GENERATED_BODY()
 
-	FSaveDataResponse() { }
-
-	TArray<uint8> BinaryData;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "DataArray"))
+	TArray<FSaveData> SaveData;
+	
+	FSaveDataArray() {}
 };
+
+USTRUCT(BlueprintType)
+struct SNP_API FSaveResponse
+{
+	GENERATED_BODY()
+};
+
+/************************/
+/*		LOAD DATA		*/
+/************************/
+
+USTRUCT(BlueprintType)
+struct SNP_API FLoadedData
+{
+	GENERATED_BODY()
+
+	FLoadedData() { }
+		
+	UPROPERTY()
+	FString Base64Data;
+
+	TArray<uint8> GetBinaryData() const
+	{
+		TArray<uint8> BinaryData;
+		if(!FBase64::Decode(Base64Data, BinaryData))
+		{
+			return TArray<uint8>();
+		}
+		
+		return BinaryData;
+	}
+	
+	FString ToString() const
+	{
+		return FString::Printf(TEXT("Base64Data: %s"), *Base64Data);
+	}
+};
+
+USTRUCT(BlueprintType)
+struct SNP_API FLoadedDataArray
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TArray<FLoadedData> DataArray;
+	
+	FLoadedDataArray() {}
+
+	FString ToString() const
+	{
+		FString Result;
+		for (const FLoadedData& Data : DataArray)
+		{
+			Result += Data.ToString() + TEXT(", ");
+		}
+		return Result.IsEmpty() ? TEXT("Empty") : Result;
+	}
+};
+
+USTRUCT(BlueprintType)
+struct SNP_API FLoadResponse
+{
+	GENERATED_BODY()
+};
+

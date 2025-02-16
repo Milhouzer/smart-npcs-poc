@@ -8,9 +8,9 @@ USTRUCT(BlueprintType)
 struct SNP_API FBaseActorSaveState
 {
 	GENERATED_BODY()
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString ObjectName;
+	int32 ObjectId;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FTransform Transform;
@@ -19,7 +19,7 @@ struct SNP_API FBaseActorSaveState
 	
 	virtual bool Serialize(FArchive& Ar)
 	{
-		Ar << ObjectName;
+		Ar << ObjectId;
 		Ar << Transform;
 		return true;
 	}
@@ -62,6 +62,9 @@ struct SNP_API FChestSaveState : public FBaseActorSaveState
 		int32 Count = Items.Num();
 		Ar << Count;
 
+		UE_LOG(LogTemp, Log, TEXT("Serializing ChestSaveState - IsLoading: %d, Count: %d"), 
+			Ar.IsLoading(), Count);
+		
 		if (Ar.IsLoading())
 			Items.SetNum(Count);
         
@@ -77,8 +80,8 @@ struct SNP_API FChestSaveState : public FBaseActorSaveState
 	// Convert struct to string for logging
 	FString ToString() const
 	{
-		return FString::Printf(TEXT("Name: %s, Location: %s, ItemCount: %d"),
-			*ObjectName,
+		return FString::Printf(TEXT("Name: %d, Location: %s, ItemCount: %d"),
+			ObjectId,
 			*Transform.ToHumanReadableString(),
 			Items.Num());
 	}

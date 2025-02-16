@@ -5,6 +5,21 @@
 
 #include "CaravanInterior.generated.h"
 
+USTRUCT(BlueprintType)
+struct SNP_API FSavedObjectKey
+{
+    GENERATED_BODY()
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere)
+    int32 Id;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere)
+    FString Name;
+    
+    UPROPERTY(BlueprintReadWrite, EditAnywhere)
+    TSubclassOf<AActor> Type;
+};
+
 class ILevelSimulator;
 
 UCLASS(BlueprintType, Blueprintable)
@@ -25,34 +40,17 @@ public:
     virtual void Enter(APlayerController* PlayerController) override;
     virtual void Exit(APlayerController* PlayerController) override;
 
-    // UFUNCTION(BlueprintCallable)
-    // void SetVisiblePlayer(APlayerController* PlayerController, bool Visible);
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-    // virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FSavedObjectKey> ActorsReferences;
 
-    // UFUNCTION(BlueprintCallable)
-    // UStaticMeshComponent* GetMeshComponent() const
-    // {
-    //     return FloorMeshComponent;
-    // }
-    
+    UFUNCTION(BlueprintCallable)
+    void SaveData();
+
+    UFUNCTION(BlueprintCallable)
+    void LoadData();
 private:
     // Data associated to this simulation
     FLevelSimulationData* Data;
-    
-    
-    // UPROPERTY(VisibleAnywhere)
-    // UStaticMeshComponent* FloorMeshComponent;
-
-    // UFUNCTION()
-    // void OnRep_VisiblePlayers();
-    
-    // UPROPERTY(ReplicatedUsing=OnRep_VisiblePlayers)
-    // TArray<APlayerController*> VisiblePlayers;
-
-    // void UpdateMeshVisibility(APlayerController* PlayerController);
-
-    // Helper function to ensure visibility is correct at start
-    // void InitializeVisibility();
-    
 };
