@@ -13,6 +13,7 @@ class SNP_API ISaveable
 {
 	GENERATED_BODY()
 
+public:
 	virtual TArray<uint8> GetSaveState() = 0;
 	virtual void LoadSaveState(FMemoryReader SaveState) = 0;
 };
