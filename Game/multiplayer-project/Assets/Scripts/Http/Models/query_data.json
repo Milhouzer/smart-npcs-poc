@@ -1,0 +1,21 @@
+{
+    "data":{
+        "player_id":0,
+        "bot_id":"0",
+        "query":"what time is it"
+    },
+    "POI":{
+        "harvest":{
+            "types":["glowy_mushroom","medicinal_herb","unidentified"],
+            "distances":[5,12,26]
+        },
+        "inspect":{
+            "types":["glowy_mushroom","medicinal_herb","chest","unidentified","chest","crate"],
+            "distances":[5,12,21,26,46,151]
+        },
+        "stash":{
+            "types":["chest","chest","crate"],
+            "distances":[21,46,151]
+        }
+    }
+}
