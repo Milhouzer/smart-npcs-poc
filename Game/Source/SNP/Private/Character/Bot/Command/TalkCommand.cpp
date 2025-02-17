@@ -1,7 +1,7 @@
 ﻿#include "Character/Bot/Command/TalkCommand.h"
 #include "Character/Bot/Command/Interfaces/CommandRunner.h"
 #include "CoreMinimal.h"
-#include "Game/BotAPISubsystem.h"
+#include "Game/GameAPISubsystem.h"
 
 void FTalkCommand::Run(ICommandRunner* Runner)
 {
@@ -13,7 +13,7 @@ void FTalkCommand::Run(ICommandRunner* Runner)
 
 	if (UGameInstance* GameInstance = Runner->GetRunner()->GetGameInstance())
 	{
-		if (UBotAPISubsystem* APISubsystem = GameInstance->GetSubsystem<UBotAPISubsystem>())
+		if (UGameAPISubsystem* APISubsystem = GameInstance->GetSubsystem<UGameAPISubsystem>())
 		{
 			const FTalkRequest* Request = new FTalkRequest(CmdData.Message, CmdData.POIs);
 			APISubsystem->SendTalkCommand(*Request, [this](const FTalkResponse& Response, const bool Success)
